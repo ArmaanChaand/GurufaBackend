@@ -6,6 +6,11 @@ class userSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+class userInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name']
+
 class registerUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

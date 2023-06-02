@@ -1,22 +1,31 @@
-
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
-from .serializers import userSerializer, registerUserSerializer
+from .serializers import userSerializer, registerUserSerializer, userInfoSerializer
 
 @api_view(http_method_names=['GET'])
 @permission_classes(permission_classes=[IsAuthenticated])
 def userAPIView(request):
     users = User.objects.all()
-    data = userSerializer(users, many=True).data
+    data = userInfoSerializer(users, many=True).data
     data = {
         'users': data,
         'num_of_users': len(users),
     }
     return Response(data=data)
+
+@api_view(http_method_names=['GET'])
+@permission_classes(permission_classes=[IsAuthenticated])
+def getUserInfo(request):
+    theUser = request.user
+    data = userInfoSerializer(theUser, many=False).data
+    response_data = {
+        'users': data,
+    }
+    return Response(data=response_data)
 
 
 @api_view(http_method_names=['POST'])

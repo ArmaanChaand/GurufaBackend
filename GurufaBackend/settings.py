@@ -9,9 +9,14 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import os
 from datetime import timedelta
-
 from pathlib import Path
+import dotenv
+
+# Load environment variables from .env file
+dotenv.load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ovnx(kzvfkgl%&4m#hox9ln=+hiwu!qj4h9kl(u)!@ja9j7=un'
+SECRET_KEY = os.getenv('SECRET_KEY', 'ovnx(kzvfkgl%&4m#hox9ln=+hiwusdfsdfwrt24f!qj4h9kl(u)!@ja9j7=un')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', False) == '1'
 
 ALLOWED_HOSTS = []
 
@@ -130,6 +135,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -152,13 +159,11 @@ REST_FRAMEWORK = {
 
 """SIMPLE JWT"""
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=120),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=15),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
-
-    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 
@@ -167,7 +172,8 @@ CORS_URLS_REGEX = r"^/api/.*$"
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
-    'https://gurufa.netlify.app'
+    'http://127.0.0.1:5173',
+    'https://gurufa.netlify.app',
 ]
 
 
