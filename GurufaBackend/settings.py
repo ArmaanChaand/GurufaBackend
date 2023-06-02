@@ -31,8 +31,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'ovnx(kzvfkgl%&4m#hox9ln=+hiwusdfsdfwrt24f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == '1'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['gurufa.up.railway.app', 'localhost']
 
+# DEPLOY
+CSRF_TRUSTED_ORIGINS = ['https://gurufa.up.railway.app']
+CSRF_COOKIE_SECURE = True
 
 # Application definition
 
@@ -66,6 +69,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # Railway
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'GurufaBackend.urls'
