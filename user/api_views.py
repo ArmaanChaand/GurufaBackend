@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
 
 from .models import User
 from .serializers import userSerializer, registerUserSerializer, userInfoSerializer
@@ -16,15 +17,25 @@ def userAPIView(request):
     }
     return Response(data=data)
 
-@api_view(http_method_names=['GET'])
-@permission_classes(permission_classes=[IsAuthenticated])
-def getUserInfo(request):
-    theUser = request.user
-    data = userInfoSerializer(theUser, many=False).data
-    response_data = {
-        'users': data,
-    }
-    return Response(data=response_data)
+@api_view(http_method_names=['POST'])
+def authenticateUser(request):
+    response_data = {}
+    if request.method == 'POST':
+        data = request.data
+        print(data, data['email'])
+        user = authenticate(request, email=data['email'], password=data['password'])
+        if user is not None: 
+            refresh = RefreshToken.for_user(user)
+            response_data['success'] = True
+            token = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+            response_data['token'] = token
+        else:
+            response_data['success']= False
+        return Response(response_data)
+
 
 
 @api_view(http_method_names=['POST'])

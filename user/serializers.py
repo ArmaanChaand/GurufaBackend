@@ -1,15 +1,15 @@
 from rest_framework import serializers
 from .models import User
-
+from .validators import password_validator
 class userSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
 
 class userInfoSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta: 
         model = User
-        fields = ['first_name']
+        fields = ['first_name', 'email']
 
 class registerUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,6 +18,16 @@ class registerUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True},
         }
+
+    def validate_password(self, value):
+        """
+            Check Passowrd's strength
+        """
+        is_strong = password_validator(value)
+        if is_strong[0]:
+            return value
+        else:
+            raise serializers.ValidationError(is_strong[1])
 
 """
 {
