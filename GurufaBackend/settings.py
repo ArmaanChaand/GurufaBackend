@@ -31,15 +31,15 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'ovnx(kzvfkgl%&4m#hox9ln=+hiwusdfsdfwrt24f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == '1'
 
-ALLOWED_HOSTS = ['gurufa.up.railway.app', 'localhost']
+ALLOWED_HOSTS = ['gurufa.up.railway.app', 'localhost', '127.0.0.1']
 
 """PRODUCTION SETTINGS"""
-CSRF_TRUSTED_ORIGINS = ['https://gurufa.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://gurufa.up.railway.app', 'http://127.0.0.1', 'http://localhost']
 CSRF_COOKIE_SECURE = True
 
-SECURE_HSTS_SECONDS = 31536000
+# SECURE_HSTS_SECONDS = 31536000
 # SECURE_SSL_REDIREC=True #Unless your site should be available over both SSL and non-SSL connections, you may want to either set this setting True or configure a load balancer or reverse-proxy server to redirect all connections to HTTPS.
-SESSION_COOKIE_SECURE=True
+# SESSION_COOKIE_SECURE=True
 
 # Application definition
 

@@ -7,7 +7,6 @@ from .models import User
 from .serializers import userSerializer, registerUserSerializer, userInfoSerializer
 
 @api_view(http_method_names=['GET'])
-@permission_classes(permission_classes=[IsAuthenticated])
 def userAPIView(request):
     users = User.objects.all()
     data = userInfoSerializer(users, many=True).data
