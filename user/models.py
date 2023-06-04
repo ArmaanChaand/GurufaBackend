@@ -36,10 +36,10 @@ class User(AbstractUser, PermissionsMixin):
     first_name        = models.CharField(_("First name"), max_length=150, blank=False, null=False)
     last_name         = models.CharField(_("Last name"), max_length=150, blank=False, null=False)
     email             = models.EmailField(_("Email address"), blank=False, null=False, unique=True)
-    is_email_verified = models.BooleanField(default=False, null=False, blank=False)
-    phone_number      = PhoneNumberField(blank=False, null=False)
-    is_phone_verified = models.BooleanField(default=False, null=False, blank=False)
-    whatsapp_update   = models.BooleanField(default=False, null=False, blank=False)
+    is_email_verified = models.BooleanField(_("Email verified"), default=False, null=False, blank=False)
+    phone_number      = PhoneNumberField(_("Phone Number "), blank=False, null=False)
+    is_phone_verified = models.BooleanField(_("Phone verified"),default=False, null=False, blank=False)
+    whatsapp_update   = models.BooleanField(_("Opted for WhatsApp Update"),default=False, null=False, blank=False)
 
 
     objects = CustomUserManager()

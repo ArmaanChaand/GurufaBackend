@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-
+from django.utils import timezone
 from .models import User
 from .serializers import userSerializer, registerUserSerializer, userInfoSerializer
 
@@ -24,6 +24,8 @@ def authenticateUser(request):
         data = request.data
         user = authenticate(request, email=data['email'], password=data['password'])
         if user is not None: 
+            user.last_login = timezone.now()
+            user.save()
             refresh = RefreshToken.for_user(user)
             response_data['success'] = True
             token = {
