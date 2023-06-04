@@ -22,7 +22,6 @@ def authenticateUser(request):
     response_data = {}
     if request.method == 'POST':
         data = request.data
-        print(data, data['email'])
         user = authenticate(request, email=data['email'], password=data['password'])
         if user is not None: 
             refresh = RefreshToken.for_user(user)
@@ -32,9 +31,32 @@ def authenticateUser(request):
                 'access': str(refresh.access_token)
             }
             response_data['token'] = token
+            user_data = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            }
+            response_data['user_data'] = user_data
         else:
             response_data['success']= False
         return Response(response_data)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logoutUser(request):
+    if request.method == 'POST':
+        refresh_token = request.data.get('refresh_token')
+
+        if not refresh_token:
+            return Response({'error': 'Refresh token is required.'}, status=400)
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({'detail': 'Successfully logged out.'}, status=200)
+        except Exception:
+            return Response({'error': 'Invalid refresh token.'}, status=400)
 
 
 
@@ -56,6 +78,11 @@ def registerUser(request):
                 'access': str(refresh.access_token)
             }
             response_data['token'] = token
+            user_data = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            }
+            response_data['user_data'] = user_data
         else:
             response_data['success']= False,
             response_data['errors'] = new_user_serializer.errors
