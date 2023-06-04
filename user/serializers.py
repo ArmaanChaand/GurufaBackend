@@ -9,7 +9,7 @@ class userSerializer(serializers.ModelSerializer):
 class userInfoSerializer(serializers.ModelSerializer):
     class Meta: 
         model = User
-        fields = ['first_name', 'email']
+        fields = ['first_name','last_name','email']
 
 class registerUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,12 +29,8 @@ class registerUserSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError(is_strong[1])
 
+
 """
-{
-    "first_name": "Armaan",
-    "last_name": "Chaand",
-    "email": "phone@email.com",
-    "phone_number": "3234834987",
-    "password": "32348sdfsdfj"
-}
+password@email.com
+Password@123
 """

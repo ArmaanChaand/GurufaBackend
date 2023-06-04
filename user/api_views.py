@@ -31,10 +31,7 @@ def authenticateUser(request):
                 'access': str(refresh.access_token)
             }
             response_data['token'] = token
-            user_data = {
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            }
+            user_data = userInfoSerializer(user, many=False).data
             response_data['user_data'] = user_data
         else:
             response_data['success']= False
@@ -78,13 +75,18 @@ def registerUser(request):
                 'access': str(refresh.access_token)
             }
             response_data['token'] = token
-            user_data = {
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            }
+            user_data = userInfoSerializer(user, many=False).data
             response_data['user_data'] = user_data
         else:
             response_data['success']= False,
             response_data['errors'] = new_user_serializer.errors
         return Response(response_data)
-            
+    
+@api_view(http_method_names=['GET'])
+@permission_classes([IsAuthenticated])
+def getUserInfo(request):
+    user = request.user
+    response_data = {} # Append With Informations
+    data = userInfoSerializer(user, many=False).data
+    response_data['user'] = data
+    return Response(response_data)
