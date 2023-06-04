@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     # Internal Apps
     'api.apps.ApiConfig',
     'user.apps.UserConfig',
+    'home.apps.HomeConfig',
 ]
 
 MIDDLEWARE = [
