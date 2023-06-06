@@ -20,5 +20,8 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls'))
-
 ]
+
+admin.site.site_header = "Gurufa Administration"
+admin.site.site_title = "Gurufa Admin Panel"
+admin.site.index_title = ""
