@@ -57,10 +57,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     "phonenumber_field",
     "corsheaders",
+
     # Internal Apps
     'api.apps.ApiConfig',
     'user.apps.UserConfig',
     'home.apps.HomeConfig',
+    'course.apps.CourseConfig',
 ]
 
 MIDDLEWARE = [

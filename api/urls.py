@@ -15,5 +15,6 @@ urlpatterns = [
     # Users
     path('user/', include('user.urls')),
     path('home/', include('home.urls')),
+    path('courses/', include('course.urls')),
     
 ]
