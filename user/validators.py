@@ -23,3 +23,4 @@ def password_validator(password):
     
     # Password meets all criteria
     return [True, password]
+
