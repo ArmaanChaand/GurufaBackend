@@ -107,21 +107,30 @@ def getMyKids(request):
 @permission_classes([IsAuthenticated])
 def saveMyKid(request, kid_id=None):
     if kid_id is not None:
-        try:
-            kid = Kid.objects.get(id=kid_id)
-        except Kid.DoesNotExist:
-            return Response({"error": "Kid not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = kidInfoSerializer(instance=kid, data=request.data, partial=True)
+            try:
+                kid = Kid.objects.get(id=kid_id)
+            except Kid.DoesNotExist:
+                return Response({"error": "Kid not found."}, status=status.HTTP_404_NOT_FOUND)
+            updated_data = request.data.copy()  # Create a copy of the request data
+            if(updated_data['kid_profile'] == ""):
+                updated_data['kid_profile'] = kid.kid_profile  # Update the kid_profile field with the desired new value
+            serializer = kidInfoSerializer(instance=kid, data=updated_data, partial=True)
     else:
         serializer = kidInfoSerializer(data=request.data)
-    
+    print(serializer)
     if serializer.is_valid():
-        if kid_id is None:   # Check if kid_profile is provided in request data during creation or update
-            serializer.save(kid_parent=request.user)
-        else:
-            serializer.save(kid_parent=request.user, kid_profile=kid.kid_profile)  # Keep the existing kid_profile during update
-        
+        serializer.save(kid_parent=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteAKid(request, kid_id):
+    try:
+        instance = Kid.objects.get(id=kid_id)
+    except Kid.DoesNotExist:
+        return Response({"error": "Kid not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    instance.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
