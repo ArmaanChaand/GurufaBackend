@@ -117,7 +117,7 @@ if DEBUG:
 else:
 """
 DATABASES = {
-        'default': dj_database_url.config(default='mongodb://mongo:ybhe5vNmzJaV0l1oaWVO@containers-us-west-93.railway.app:6071')
+        'default': dj_database_url.config(default='postgresql://postgres:8PUZaJWBBpemnqXK1a5b@containers-us-west-184.railway.app:5553/railway')
     }
 
 
