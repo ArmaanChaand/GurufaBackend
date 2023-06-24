@@ -68,7 +68,6 @@ def registerUser(request):
         response_data = {} 
         if new_user_serializer.is_valid():
             user = new_user_serializer.save()
-            response_data['success']= True
             response_data['user'] = new_user_serializer.data
             """Issue Tokens"""
             refresh = RefreshToken.for_user(user)
@@ -79,10 +78,10 @@ def registerUser(request):
             response_data['token'] = token
             user_data = userInfoSerializer(user, many=False).data
             response_data['user_data'] = user_data
+            return Response(response_data, status=status.HTTP_201_CREATED)
         else:
-            response_data['success']= False
             response_data['errors'] = new_user_serializer.errors
-        return Response(response_data)
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(http_method_names=['GET'])
 @permission_classes([IsAuthenticated])

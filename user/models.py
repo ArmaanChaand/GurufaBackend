@@ -40,7 +40,6 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
-
         return self._create_user(email, password, **extra_fields)
 
 class User(AbstractUser, PermissionsMixin):
@@ -68,7 +67,7 @@ class User(AbstractUser, PermissionsMixin):
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["first_name", "last_name"]
+    REQUIRED_FIELDS = ["first_name", "last_name", "phone_number"]
 
     class Meta:
         verbose_name = 'User (Parent)'

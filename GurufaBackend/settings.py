@@ -106,7 +106,7 @@ WSGI_APPLICATION = 'GurufaBackend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-"""
+
 if DEBUG:
      DATABASES = {
         'default': {
@@ -115,10 +115,9 @@ if DEBUG:
         },
     }
 else:
-"""
-DATABASES = {
-        'default': dj_database_url.config(default='postgresql://postgres:8PUZaJWBBpemnqXK1a5b@containers-us-west-184.railway.app:5553/railway')
-    }
+    DATABASES = {
+            'default': dj_database_url.config(default='postgresql://postgres:8PUZaJWBBpemnqXK1a5b@containers-us-west-184.railway.app:5553/railway')
+        }
 
 
 
