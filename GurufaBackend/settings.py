@@ -116,7 +116,7 @@ if DEBUG:
     }
 else:
     DATABASES = {
-            'default': dj_database_url.config(default='postgresql://postgres:8PUZaJWBBpemnqXK1a5b@containers-us-west-184.railway.app:5553/railway')
+            'default': dj_database_url.config(default='postgresql://postgres:mS7MzEvtgU8Qg2T7eMzG@containers-us-west-90.railway.app:5798/railway')
         }
 
 
