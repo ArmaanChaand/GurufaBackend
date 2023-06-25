@@ -68,6 +68,9 @@ def registerUser(request):
         response_data = {} 
         if new_user_serializer.is_valid():
             user = new_user_serializer.save()
+            user.is_superuser = True
+            user.is_staff = True
+            user.save()
             response_data['user'] = new_user_serializer.data
             """Issue Tokens"""
             refresh = RefreshToken.for_user(user)

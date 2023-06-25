@@ -47,5 +47,5 @@ class kidInfoSerializer(serializers.ModelSerializer):
 
 """
 admin@gurufa.com
-admin@gurufa123
+Admin@123
 """
