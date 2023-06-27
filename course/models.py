@@ -25,9 +25,11 @@ class Course(models.Model):
 class Levels(models.Model):
     to_course   = models.ForeignKey(to=Course, on_delete=models.CASCADE, null=False, blank=False, related_name='my_levels')
     name        = models.CharField(_("Level Name"), max_length=100, null=False, blank=False)
+    description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
     num_classes = models.IntegerField(_("Number Of Classes"), null=True, blank=True)
     frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
     duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
+    starts_from = models.DecimalField(_("Starts From"), max_digits=10, decimal_places=2)
 
     class Meta:
         verbose_name = 'Course Level'
@@ -35,6 +37,19 @@ class Levels(models.Model):
     
     def __str__(self) -> str:
         return f"{ self.name } ({self.to_course})"
+    
+class Plans(models.Model):
+    name        = models.CharField(_("Plan Name"), max_length=100, null=False, blank=False)
+    description = models.CharField(_("Plan Description"), max_length=100, null=False, blank=False)
+    actual_price = models.DecimalField(_("Price (Discounted)"), max_digits=10, decimal_places=2)
+    original_price = models.DecimalField(_("Original Price"), max_digits=10, decimal_places=2)
+
+    class Meta:
+        verbose_name = 'Course Plans'
+        verbose_name_plural = 'Course Plans'
+    
+    def __str__(self) -> str:
+        return f"{ self.name }"
     
 
     
