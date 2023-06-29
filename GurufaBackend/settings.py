@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'course.apps.CourseConfig',
     'guru.apps.GuruConfig',
+    'purchase.apps.PurchaseConfig',
 ]
 
 MIDDLEWARE = [

@@ -1,8 +1,7 @@
-# from django.template.defaultfilters import floatformat, currency
 from rest_framework import serializers
 from .models import Course, Levels, Plans, Batch, BatchTiming
 from home.serializers import FAQsSerializer
-
+from datetime import date
 
 
 class PlansSerializer(serializers.ModelSerializer):
@@ -35,3 +34,13 @@ class BatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Batch
         fields = ('id', 'batch_name', 'start_date', 'end_date', 'seats_left', 'timing')
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        current_date = date.today()
+        
+        if instance.end_date < current_date:
+            # If end date has passed, return an empty representation
+            representation = {}
+        
+        return representation   
