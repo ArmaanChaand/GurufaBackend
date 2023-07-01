@@ -42,7 +42,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
         return self._create_user(email, password, **extra_fields)
 
-class User(AbstractUser, PermissionsMixin):
+class User(AbstractUser, PermissionsMixin): 
     username          = None
     auth_providers    = models.CharField(_("Auth Providers"), max_length=100,null=False, blank=False,default='Email', choices=[(provider.value, provider.name) for provider in AuthProviders])
     user_roles        = models.CharField(_("User Role"), max_length=100,null=False, blank=False,default='Parent', choices=[(role.value, role.name) for role in UserRoles])
@@ -85,11 +85,11 @@ class User(AbstractUser, PermissionsMixin):
         
 
 class Kid(models.Model):
-    kid_parent      = models.ForeignKey(User, on_delete=models.CASCADE, null=True, )
-    kid_profile     = models.ImageField(upload_to='images/users/')
-    kid_first_name  = models.CharField(_("First name"), max_length=150, blank=False, null=False)
-    kid_last_name   = models.CharField(_("Last name"), max_length=150, blank=False, null=False)
-    kid_age         = models.PositiveIntegerField(_("Kid's Age (In Years)"), default=0)
+    kid_parent        = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="my_kids")
+    kid_profile       = models.ImageField(upload_to='images/users/', null=True, blank=True)
+    kid_first_name    = models.CharField(_("First name"), max_length=150, blank=False, null=False)
+    kid_last_name     = models.CharField(_("Last name"), max_length=150, blank=False, null=False)
+    kid_age           = models.PositiveIntegerField(_("Kid's Age (In Years)"), default=0)
 
 
     class Meta:
@@ -100,4 +100,4 @@ class Kid(models.Model):
         return  self.kid_first_name + " " + self.kid_last_name
 
     def __str__(self) -> str:
-        return self.get_full_name()
+        return f"{self.get_full_name()} ({self.kid_parent})" 

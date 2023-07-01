@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Course, Levels, Plans, Batch, BatchTiming
+from .models import Course, Levels, Plans, Schedule, ScheduleTiming
 from home.models import FAQs
 
 class LevelsModelInline(admin.TabularInline):
@@ -10,6 +10,9 @@ class LevelsModelInline(admin.TabularInline):
 
 class FAQsModelInline(admin.TabularInline):
     model = FAQs
+    extra = 0
+class BatchModelInline(admin.TabularInline):
+    model = Schedule
     extra = 0
 
 class CourseModelAdmin(admin.ModelAdmin):
@@ -22,7 +25,7 @@ class CourseModelAdmin(admin.ModelAdmin):
         ('Gurus', {'fields': ['about_guru']}),
     ]
 
-    inlines = [LevelsModelInline, FAQsModelInline]
+    inlines = [LevelsModelInline, BatchModelInline, FAQsModelInline]
     
 admin.site.register(Course, CourseModelAdmin)
 
@@ -44,27 +47,30 @@ class PlansModelAdmin(admin.ModelAdmin):
     ]
 admin.site.register(Plans, PlansModelAdmin)
 
-class BatchTimingModelInline(admin.TabularInline):
-    model = BatchTiming
+class ScheduleTimingModelInline(admin.TabularInline):
+    model = ScheduleTiming
     extra = 0
 
-class BatchModelAdmin(admin.ModelAdmin):
-    list_display = ['batch_name', 'start_date', 'end_date']
+class ScheduleModelAdmin(admin.ModelAdmin):
+    list_display = ['schedule_name', 'start_date', 'end_date']
     fieldsets = [
-        ('Batch Name', {'fields': ['batch_name']}),
+        ('Schedule Name', {'fields': ['schedule_name']}),
+        ('Schedule for Course', {'fields': ['to_course']}),
+        ('Schedule for Guru', {'fields': ['guru']}),
+        ('Plan Associated', {'fields': ['plan']}),
         ('Start and End date', {'fields': ['start_date', 'end_date']}),
         ('Number of Seats', {'fields': ['total_num_of_seats', 'seats_occupied']}),
     ]
-    inlines = [BatchTimingModelInline]
-admin.site.register(Batch, BatchModelAdmin)
+    inlines = [ScheduleTimingModelInline]
+admin.site.register(Schedule, ScheduleModelAdmin)
 
-class BatchTimingModelAdmin(admin.ModelAdmin):
+class ScheduleTimingModelAdmin(admin.ModelAdmin):
     list_display = ['day', 'start_time', 'batch']
     fieldsets = [
         ('Day', {'fields': ['day']}),
         ('Batch Timing', {'fields': ['start_time', 'end_time']}),
     ]
 
-admin.site.register(BatchTiming, BatchTimingModelAdmin)
+admin.site.register(ScheduleTiming, ScheduleTimingModelAdmin)
 
 

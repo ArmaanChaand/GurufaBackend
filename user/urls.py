@@ -1,6 +1,6 @@
 from django.urls import path, include
 from .views import (userAPIView, registerUser, authenticateUser, logoutUser, getUserInfo,
-                    getMyKids,saveMyKid, deleteAKid
+                    getMyKids,saveMyKid, deleteAKid, getPurchasedCourses
                     )
 
 urlpatterns = [
@@ -14,6 +14,7 @@ urlpatterns = [
     path('kid/new/', saveMyKid , name="user-kid-new"),
     path('kid/new/<int:kid_id>/', saveMyKid , name="user-kid-new"),
     path('kid/delete/<int:kid_id>/', deleteAKid , name="user-kid-delete"),
+    path('purchase/all/', getPurchasedCourses , name="purchased-courses"),
 
     path('guru/', include('guru.urls'))
 ]

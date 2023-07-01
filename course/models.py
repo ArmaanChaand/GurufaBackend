@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.text import slugify
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
+
 # Create your models here.
 
 def validate_course_icon_size(value):
@@ -76,27 +77,31 @@ class Plans(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-class Batch(models.Model):
-    batch_name         = models.CharField(_("Batch Name"), max_length=100)
+class Schedule(models.Model):
+    to_course          = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course"))
+    plan              = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan"))
+    guru               = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"),
+                                           )
+    schedule_name            = models.CharField(_("Schedule Name"), max_length=100)
     start_date         = models.DateField(_("Start Date"))
     end_date           = models.DateField(_("End Date"))
     total_num_of_seats = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
-    seats_occupied    = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
+    seats_occupied     = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
 
 
     class Meta:
-        verbose_name = 'Batch'
-        verbose_name_plural = 'Batches' 
+        verbose_name = 'Schedule'
+        verbose_name_plural = 'Schedules' 
 
     def __str__(self) -> str:
-        return self.batch_name
+        return f"{self.schedule_name } | ({self.to_course})"
 
     @property
     def seats_left(self):
         return self.total_num_of_seats - self.seats_occupied
 
-class BatchTiming(models.Model):
-    batch = models.ForeignKey(to=Batch, on_delete=models.CASCADE, related_name='timing')
+class ScheduleTiming(models.Model):
+    batch = models.ForeignKey(to=Schedule, on_delete=models.CASCADE, related_name='timing')
     DAY_CHOICES = (
         ('MON', 'Monday'),
         ('TUE', 'Tuesday'),

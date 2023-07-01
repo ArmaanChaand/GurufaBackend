@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
 from .models import User, Kid
 from .validators import password_validator
-from django.contrib.auth.hashers import make_password
-
+from purchase.models import Purchase
+from course.models import Levels, Course        
 
 class userInfoSerializer(serializers.ModelSerializer):
     class Meta: 
@@ -33,15 +34,32 @@ class registerUserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(password)
         return super().create(validated_data)
 
+class CourseSerializerSmall(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'name','course_icon', 'slug']
 
+class KidsPurchaseLevelsSerializer(serializers.ModelSerializer):
+    to_course = CourseSerializerSmall(many=False, read_only=True)
+    class Meta:
+        model = Levels
+        fields = ['id', 'name', 'description', 'num_classes', 'frequency', 'duration', 'starts_from', 'to_course']
+
+class KidsPurchaseSerializer(serializers.ModelSerializer):
+    course_level = KidsPurchaseLevelsSerializer(many=False, read_only=True)
+    class Meta:
+        model = Purchase
+
+        fields = ['course_level', 'schedule', 'plan_selected', 'purchase_price', 'kids_selected']
 
 class kidInfoSerializer(serializers.ModelSerializer):
+    my_purchases = KidsPurchaseSerializer(many=True, read_only=True)
     class Meta: 
         model = Kid
-        fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age']
+        fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases']
     
     def validate_kid_profile(self, value):
-        if value.size > 500 * 1024:  
+        if value and value.size > 500 * 1024:  
             raise serializers.ValidationError("Image size should be less than 500KB.")
         return value
 

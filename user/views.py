@@ -7,7 +7,10 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from .models import User, Kid
 from .serializers import registerUserSerializer, userInfoSerializer, kidInfoSerializer
-
+from purchase.models import Purchase
+from purchase.serializers import PurchaseSerializer
+from course.models import Course
+from course.serializers import CourseSerializer
 
 @api_view(http_method_names=['GET'])
 def userAPIView(request):
@@ -98,12 +101,14 @@ def getUserInfo(request):
 @api_view(http_method_names=['GET'])
 @permission_classes([IsAuthenticated])
 def getMyKids(request):
-    user = request.user
-    response_data = {} # Append With Informations
-    user_kids = user.kid_set.all()
-    data = kidInfoSerializer(user_kids, many=True).data
-    response_data['kids'] = data
-    return Response(response_data)
+    try:
+        user = request.user 
+        kids = Kid.objects.filter(kid_parent=user)
+        serializer = kidInfoSerializer(kids, many=True)
+        return Response(serializer.data)
+
+    except User.DoesNotExist:
+        return Response({'message': 'User not found'}, status=404)
 
 @api_view(http_method_names=['POST'])
 @permission_classes([IsAuthenticated])
@@ -136,3 +141,14 @@ def deleteAKid(request, kid_id):
 
     instance.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPurchasedCourses(request):
+    try:
+        purchases = Purchase.objects.filter(user=request.user)
+        
+        purchase_serializer = PurchaseSerializer(purchases, many=True)
+        return Response(data=purchase_serializer.data, status=status.HTTP_200_OK)
+    except Purchase.DoesNotExist:
+        return Response({'error': 'No purchased courses found.'}, status=status.HTTP_404_NOT_FOUND)
