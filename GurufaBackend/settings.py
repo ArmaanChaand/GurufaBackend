@@ -97,6 +97,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+#For Testing
+'django.template.context_processors.media'
             ],
         },
     },
@@ -162,10 +164,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 """Image Field Setting"""
 MEDIA_URL = '/media/'
-if DEBUG:
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')    
-else:
-    MEDIA_ROOT = '/var/www/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')    
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
