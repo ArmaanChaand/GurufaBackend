@@ -2,12 +2,16 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from django.conf import settings
+import razorpay
 
 from .models import Purchase
 from .serializers import PurchaseSerializer
 from course.models import Levels, Plans, Schedule
 from user.models import User, Kid   
 # Create your views here.
+
+
 
 @api_view(http_method_names=['POST'])
 @permission_classes([IsAuthenticated])
@@ -39,7 +43,6 @@ def CreatePurchase(request):
     except Plans.DoesNotExist:
         return Response({'error': 'Invalid plan selected ID'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # kids_selected = Kid.objects.filter(id__in=kids_selected_ids)
     kids_selected = user.my_kids.filter(id__in=kids_selected_ids)
 
     purchase = Purchase.objects.create(
@@ -50,19 +53,72 @@ def CreatePurchase(request):
         purchase_price=purchase_price
     )
     purchase.kids_selected.set(kids_selected)
-
-    return Response({'message': 'Purchase created successfully'}, status=status.HTTP_201_CREATED)
-
-
-
-
-"""
-purchase_data = {
-            "user": request.user,
-            "course_level": Levels.objects.get(id=user_data["course_level"]),
-            "plan_selected": Plans.objects.get(id=user_data["plan_selected"]),
-            "schedule": Schedule.objects.get(id=user_data["schedule"]),
-            "kids_selected": user_data["kids_selected"],
-            "purchase_price": user_data["purchase_price"],
+    """RAZORPAY ORDER"""
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    DATA = {
+        "amount": float(purchase.purchase_price) * 100,
+        "currency": "INR",
+        "receipt": f"receipt@Razorpay{purchase.id}",
+        "notes": {
+            "purchase_id": purchase.id,
         }
-"""
+    }
+    razorpay_order = client.order.create(data=DATA)
+    purchase.order_id = razorpay_order['id']
+    purchase.save()
+    response_data = {
+        'message': 'Purchase created successfully',
+        'order_created': True, 
+        'order': razorpay_order,
+        'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID 
+
+    }
+
+    return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+@api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticated])
+def successPurchaseRazorpay(request):
+    razorpay_payment_id = request.data.get('razorpay_payment_id')
+    razorpay_order_id = request.data.get('razorpay_order_id')
+    razorpay_signature = request.data.get('razorpay_signature')
+    purchase_id = request.data.get('purchase_id')
+
+    try:
+        purchase = Purchase.objects.get(id=purchase_id, user=request.user)
+        purchase.payment_id = razorpay_payment_id
+        purchase.order_signature = razorpay_signature
+        if purchase.order_id == razorpay_order_id:
+            purchase.payment_status = 'PAID'
+            purchase.save()
+            return Response({"updated": True}, status=status.HTTP_200_OK)
+        else :
+            return Response({"updated": False, "message": "Order ID didn't matched"}, status=status.HTTP_400_BAD_REQUEST)
+
+    except Purchase.DoesNotExist:
+        return Response({'error': 'Purchase Does Not Exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticated])
+def failedPurchaseRazorpay(request):
+    razorpay_payment_id = request.data.get('razorpay_payment_id')
+    razorpay_order_id = request.data.get('razorpay_order_id')
+    razorpay_signature = request.data.get('razorpay_signature')
+    purchase_id = request.data.get('purchase_id')
+
+    try:
+        purchase = Purchase.objects.get(id=purchase_id, user=request.user)
+        purchase.payment_id = razorpay_payment_id
+        purchase.order_signature = razorpay_signature
+        if purchase.order_id == razorpay_order_id:
+            purchase.payment_status = 'FAILED'
+            purchase.save()
+            return Response({"updated": True}, status=status.HTTP_200_OK)
+        else :
+            return Response({"updated": False, "message": "Order ID didn't matched"}, status=status.HTTP_400_BAD_REQUEST)
+
+    except Purchase.DoesNotExist:
+        return Response({'error': 'Purchase Does Not Exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+

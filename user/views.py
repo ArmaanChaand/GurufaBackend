@@ -146,7 +146,7 @@ def deleteAKid(request, kid_id):
 @permission_classes([IsAuthenticated])
 def getPurchasedCourses(request):
     try:
-        purchases = Purchase.objects.filter(user=request.user)
+        purchases = Purchase.objects.filter(user=request.user, payment_status='PAID')
         
         purchase_serializer = PurchaseSerializer(purchases, many=True)
         return Response(data=purchase_serializer.data, status=status.HTTP_200_OK)

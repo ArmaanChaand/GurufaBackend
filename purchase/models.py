@@ -11,7 +11,16 @@ class Purchase(models.Model):
     plan_selected  = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan Selected"))
     kids_selected  = models.ManyToManyField(to=Kid, related_name='my_purchases', null=True, blank=True)
     purchase_price = models.DecimalField(_("Price (Purchased With )"), max_digits=10, decimal_places=2)
-
+    PAYMENT_STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('PAID', 'Paid'),
+        ('FAILED', 'Failed'),
+    )
+    payment_status  = models.CharField(_("Payment Status"),max_length=10, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
+    order_id        = models.CharField(_("Order ID"), max_length=200, null=True, blank=True)   
+    payment_id      = models.CharField(_("Payment ID"), max_length=200, null=True, blank=True)   
+    order_signature = models.CharField(_("Razorpay Signature"), max_length=200, null=True, blank=True)   
+     
 
     class Meta:
         verbose_name = 'Purchase'

@@ -9,7 +9,14 @@ class PurchaseSerializer(serializers.ModelSerializer):
     schedule      = ScheduleSerializer(many=False, read_only=True)
     plan_selected = PlansSerializer(many=False, read_only=True)
     kids_selected = kidInfoSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Purchase
         fields = ['course_level', 'schedule', 'plan_selected', 'purchase_price', 'kids_selected']
+    
+    def to_representation(self, instance):
+        if instance.payment_status == 'PAID':
+            return super().to_representation(instance)
+        else:
+            return None
     
