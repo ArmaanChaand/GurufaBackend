@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'ovnx(kzvfkgl%&4m#hox9ln=+hiwusdfsdfwrt24f!qj4h9kl(u)!@ja9j7=un')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', True) == '1'
+DEBUG = os.getenv('DEBUG', False) == '1'
 
 ALLOWED_HOSTS = ['gurufa.up.railway.app', 'localhost', '127.0.0.1', 'armaanchaand.pythonanywhere.com']
 
