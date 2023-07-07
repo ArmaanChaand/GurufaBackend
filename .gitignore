@@ -1,3 +1,1 @@
-ENV
-.env 
-db.sqlite3
+ENV     
