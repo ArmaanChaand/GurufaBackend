@@ -1,3 +1,5 @@
+import random 
+import string
 import re
 
 def password_validator(password):
@@ -24,3 +26,15 @@ def password_validator(password):
     # Password meets all criteria
     return [True, password]
 
+def generate_strong_password(length=12):
+    """
+    Generate a strong password that passes the password_validator function.
+
+    :param length: Length of the password (default: 12)
+    :return: Strong password that meets the criteria
+    """
+    while True:
+        password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
+        validation_result = password_validator(password)
+        if validation_result[0]:
+            return validation_result[1]

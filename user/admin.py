@@ -14,14 +14,14 @@ class KidModelInline(admin.TabularInline):
 
 
 class UserModelAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'email', 'phone_number']  # Specify the fields to display in the list view
+    list_display = ['first_name', 'email', 'phone_number', 'auth_providers']  # Specify the fields to display in the list view
     search_fields = ['email', 'phone_number', 'first_name', 'last_name']  # Enable searching by specified fields
     list_filter = ['auth_providers', 'is_a_guru','is_email_verified', 'is_phone_verified', 'date_joined', 'last_login']  # Enable filtering by specified fields
 
     fieldsets = [
         ('Auth Providers', {'fields': ['auth_providers']}),
         ('Guru Status', {'fields': ['user_roles', 'is_a_guru']}),
-        ('Name', {'fields': ['first_name', 'last_name']}),
+        ('Name and Picture', {'fields': ['first_name', 'last_name','picture', 'auth_provider_img', 'username']}),
         ('Email', {'fields': ['email', 'is_email_verified']}),
         ('Phone', {'fields': ['phone_number', 'is_phone_verified', 'whatsapp_update']}),
         ('password', {'fields': ['password']}),

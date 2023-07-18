@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon-d9223000.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gurufa</title>
+  </head>
+  <body>
+    {% load socialaccount %}
+    <h2 >Google Signin</h2>
+    <a href="{% provider_login_url 'google' %}?next=/">Sign in with Google</a>
+  </body>
+</html>

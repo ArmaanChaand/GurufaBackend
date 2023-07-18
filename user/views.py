@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -40,9 +41,10 @@ def authenticateUser(request):
             response_data['token'] = token
             user_data = userInfoSerializer(user, many=False).data
             response_data['user_data'] = user_data
+            return Response(response_data, status=status.HTTP_200_OK)
         else:
             response_data['success']= False
-        return Response(response_data)
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -71,8 +73,6 @@ def registerUser(request):
         response_data = {} 
         if new_user_serializer.is_valid():
             user = new_user_serializer.save()
-            user.is_superuser = True
-            user.is_staff = True
             user.save()
             response_data['user'] = new_user_serializer.data
             """Issue Tokens"""
@@ -152,3 +152,4 @@ def getPurchasedCourses(request):
         return Response(data=purchase_serializer.data, status=status.HTTP_200_OK)
     except Purchase.DoesNotExist:
         return Response({'error': 'No purchased courses found.'}, status=status.HTTP_404_NOT_FOUND)
+    

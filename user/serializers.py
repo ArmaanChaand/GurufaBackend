@@ -19,6 +19,7 @@ class registerUserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
         }
 
+
     def validate_password(self, value):
         """
             Check Passowrd's strength

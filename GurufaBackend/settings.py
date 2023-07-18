@@ -32,10 +32,18 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'ovnx(kzvfkgl%&4m#hox9ln=+hiwusdfsdfwrt24f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == '1'
 
-ALLOWED_HOSTS = ['gurufa.up.railway.app', 'localhost', '127.0.0.1', 'armaanchaand.pythonanywhere.com']
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1', 
+    'armaanchaand.pythonanywhere.com'
+    ]
 
 """PRODUCTION SETTINGS"""
-CSRF_TRUSTED_ORIGINS = ['https://gurufa.up.railway.app', 'http://127.0.0.1', 'http://localhost', 'https://armaanchaand.pythonanywhere.com/']
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1', 
+    'http://localhost', 
+    'https://armaanchaand.pythonanywhere.com/'
+    ]
 CSRF_COOKIE_SECURE = True
 
 # SECURE_HSTS_SECONDS = 31536000
@@ -51,13 +59,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # External Apps
+    # EXTERNAL APPS
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     "phonenumber_field",
     "corsheaders",
-
     # Internal Apps
     'api.apps.ApiConfig',
     'user.apps.UserConfig',
@@ -79,7 +86,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
     # Railway
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
@@ -89,7 +95,9 @@ ROOT_URLCONF = 'GurufaBackend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, "templates")
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -97,8 +105,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-#For Testing
-'django.template.context_processors.media'
             ],
         },
     },
@@ -188,7 +194,8 @@ REST_FRAMEWORK = {
   
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+        'rest_framework.authentication.SessionAuthentication',
+    ],
   
 }
 
@@ -200,6 +207,7 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
+    'AUTH_HEADER_TYPES': ('Bearer'),
 }
 
 
@@ -213,6 +221,8 @@ CORS_ALLOWED_ORIGINS = [
     'https://armaanchaand.pythonanywhere.com',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 
 """DJANGO_PHONE_NUMBERFIELD"""
 PHONENUMBER_DB_FORMAT = "NATIONAL"
@@ -222,3 +232,10 @@ PHONENUMBER_DEFAULT_REGION = "IN"
 """RAZORPAY CREDENTIALS"""
 RAZORPAY_KEY_ID     = os.getenv('RAZORPAY_KEY_ID', "None")
 RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', "None")
+
+
+"""EMAIL"""
+EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+EMAIL_HOST_USER = '0e0ff42210ef8a'
+EMAIL_HOST_PASSWORD = '72d3251963ecec'
+EMAIL_PORT = '2525'

@@ -1,3 +1,4 @@
+import uuid
 from django.db import models, IntegrityError
 from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
@@ -21,16 +22,21 @@ class CustomUserManager(BaseUserManager):
     
     def _create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError('The Email field must be set')
+            raise ValueError('Users must have an email address')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, password, **extra_fields)
+    def create_user(self, email, password=None, **kwargs):
+        if not email:
+            raise ValueError("Users must have an email address")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **kwargs)
+        user.set_password(password)
+        user.save()
+        return user
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -43,7 +49,9 @@ class CustomUserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 class User(AbstractUser, PermissionsMixin): 
-    username          = None
+    picture           = models.ImageField(upload_to='images/users/', null=True, blank=True)
+    auth_provider_img = models.URLField(null=True, blank=True)
+    username          = models.CharField(_("Username"), max_length=100, null=True, blank=True)
     auth_providers    = models.CharField(_("Auth Providers"), max_length=100,null=False, blank=False,default='Email', choices=[(provider.value, provider.name) for provider in AuthProviders])
     user_roles        = models.CharField(_("User Role"), max_length=100,null=False, blank=False,default='Parent', choices=[(role.value, role.name) for role in UserRoles])
     is_a_guru         = models.BooleanField(_("Is A Guru?"), null=False, blank=False, default=False)
@@ -51,11 +59,7 @@ class User(AbstractUser, PermissionsMixin):
     last_name         = models.CharField(_("Last name"), max_length=150, blank=False, null=False)
     email             = models.EmailField(_("Email address"), blank=False, null=False, unique=True)
     is_email_verified = models.BooleanField(_("Email verified"), default=False, null=False, blank=False)
-    phone_number      = PhoneNumberField(_("Phone Number "), blank=False, null=False, unique=True,
-                                            error_messages={
-                                                "unique": _("Phone number already being used."),
-                                            }
-                                            )
+    phone_number      = PhoneNumberField(_("Phone Number "), blank=True, null=True)
     is_phone_verified = models.BooleanField(_("Phone verified"),default=False, null=False, blank=False)
     whatsapp_update   = models.BooleanField(_("Opted for WhatsApp Update"),default=False, null=False, blank=False)
 
@@ -70,18 +74,17 @@ class User(AbstractUser, PermissionsMixin):
     REQUIRED_FIELDS = ["first_name", "last_name", "phone_number"]
 
     class Meta:
-        verbose_name = 'User (Parent)'
-        verbose_name_plural = 'Users (Parent)'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
     
     def save(self, *args, **kwargs):
         """
-            Raise validation error instead of Integrity Error
-            in uniqueness of phone numbers
+           Add unique username to each users
         """
-        try:
-            super().save(*args, **kwargs)
-        except IntegrityError:
-            raise ValidationError("Phone number already being used.")
+        if not self.username:
+            random_string = str(uuid.uuid4().hex[:8])
+            self.username = f"{self.first_name.lower()}{self.last_name.lower()}{random_string}"
+        super().save(*args, **kwargs)
         
 
 class Kid(models.Model):
