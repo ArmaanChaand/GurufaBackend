@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Kid
+from .models import User, Kid, OTP
 from guru.models import Guru
 # Register your models here.
 """Associated Guru Model"""
@@ -46,3 +46,4 @@ class KidModelAdmin(admin.ModelAdmin):
         ('Parent', {'fields': ['kid_parent']}), 
     ]
 admin.site.register(Kid, KidModelAdmin)
+admin.site.register(OTP)

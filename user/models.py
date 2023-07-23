@@ -85,6 +85,14 @@ class User(AbstractUser, PermissionsMixin):
             random_string = str(uuid.uuid4().hex[:8])
             self.username = f"{self.first_name.lower()}{self.last_name.lower()}{random_string}"
         super().save(*args, **kwargs)
+
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.otp_code}"
         
 
 class Kid(models.Model):

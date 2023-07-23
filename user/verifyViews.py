@@ -7,7 +7,12 @@ from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.http import HttpResponse
-from .models import User
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import User, OTP
+import random
+
 
 def send_verification_email(request, user):
     # Generate the verification link
@@ -45,15 +50,41 @@ def verify_email(request, uidb64, token):
 from twilio.rest import Client
 
 
-
-
-def send_register_sms(user_phone_number):
+def sendOtpSMS(user_phone_number, otp):
     account_sid = settings.TWILIO_ACCOUNT_SID
     auth_token = settings.TWILIO_AUTH_TOKEN
     client = Client(account_sid, auth_token)
     message = client.messages.create(
-                        body="This is test SMS from Gurufa Kids.",
+                        body=f"Your OTP phone verification from Gurufa Kids is {otp}",
                         from_=str(settings.TWILIO_PHONE_NUMBER),
                         to=str(user_phone_number),
                     )
     print(message.sid)
+
+
+def generate_otp(user):
+    otp_code = str(random.randint(1000, 9999))
+    OTP.objects.create(user=user, otp_code=otp_code)
+    return otp_code
+
+
+def sendOTP(user):
+    try:
+        otp = generate_otp(user=user)
+        sendOtpSMS(user_phone_number=user.phone_number,otp=otp)
+        return otp
+    except Exception as error:
+        raise error
+
+@api_view(['POST'])
+def verify_phone(request):
+    user = request.user
+    otp_code = request.data.get('OTP')
+    try:
+        otp_instance = OTP.objects.get(user=user, otp_code=otp_code)
+        user.is_phone_verified = True
+        user.save()
+        otp_instance.delete()
+        return Response({'message': 'OTP verification successful.'}, status=status.HTTP_200_OK)
+    except OTP.DoesNotExist:
+        return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)

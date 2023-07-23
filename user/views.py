@@ -12,7 +12,7 @@ from purchase.models import Purchase
 from purchase.serializers import PurchaseSerializer
 from course.models import Course
 from course.serializers import CourseSerializer
-from .verifyViews import send_verification_email, send_register_sms
+from .verifyViews import send_verification_email, sendOTP
 
 @api_view(http_method_names=['GET'])
 def userAPIView(request):
@@ -88,7 +88,7 @@ def registerUser(request):
             try:
                 send_verification_email(request=request, user=user)
                 if user.phone_number:
-                    send_register_sms(user_phone_number=user.phone_number)
+                    sendOTP(user=user)
             except:
                 pass
             return Response(response_data, status=status.HTTP_201_CREATED)
