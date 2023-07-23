@@ -26,7 +26,7 @@ def send_verification_email(request, user):
     message = render_to_string('verify_email.html', {
         'first_name': user.first_name,
         'email': user.email,
-        'verification_link': f'http://{domain}{verification_link}',
+        'verification_link': f'https://{domain}{verification_link}',
     })
 
     # Send the email
