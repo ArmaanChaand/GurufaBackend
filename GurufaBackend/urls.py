@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
+from user.verifyViews import verify_email
 
 
 
@@ -26,6 +26,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('verify/<str:uidb64>/<str:token>/', verify_email, name='verify_email'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
