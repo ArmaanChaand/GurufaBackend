@@ -42,6 +42,11 @@ def authenticateUser(request):
             response_data['token'] = token
             user_data = userInfoSerializer(user, many=False).data
             response_data['user_data'] = user_data
+            if not user.is_phone_verified:
+                response_data['otp'] = True
+                sendOTP(user)
+            if not user.is_email_verified:
+                send_verification_email(request=request, user=user)
             return Response(response_data, status=status.HTTP_200_OK)
         else:
             response_data['success']= False

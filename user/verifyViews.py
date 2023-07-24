@@ -7,11 +7,14 @@ from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User, OTP
+from .serializers import userInfoSerializer
 import random
+from twilio.rest import Client
 
 
 def send_verification_email(request, user):
@@ -42,12 +45,16 @@ def verify_email(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_email_verified = True  # Update the user's status or perform any other desired action
         user.save()
-        return HttpResponse('email_verification_successful')  # Redirect to a success page
+        return redirect('https://gurufa.netlify.app/')
+        # return redirect('http://localhost:5173/')
+        # return HttpResponse('email_verification_successful')  # Redirect to a success page
     else:
-        return HttpResponse('email_verification_failed')  # Redirect to a failure page
+        return redirect('https://gurufa.netlify.app/')
+        # return redirect('http://localhost:5173/')
+        # return HttpResponse('email_verification_failed')  # Redirect to a failure page
 
 
-from twilio.rest import Client
+
 
 
 def sendOtpSMS(user_phone_number, otp):
@@ -85,6 +92,6 @@ def verify_phone(request):
         user.is_phone_verified = True
         user.save()
         otp_instance.delete()
-        return Response({'message': 'OTP verification successful.'}, status=status.HTTP_200_OK)
+        return Response({'message': 'OTP verification successful.', 'user_data': userInfoSerializer(user).data}, status=status.HTTP_200_OK)
     except OTP.DoesNotExist:
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
