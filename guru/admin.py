@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Guru
+from .models import Guru, BecomeAGuru
 
 # Register your models here.
 class GuruModelAdmin(admin.ModelAdmin):
@@ -17,3 +17,7 @@ class GuruModelAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Guru, GuruModelAdmin)
+
+
+"""Become A Guru Form"""
+admin.site.register(BecomeAGuru)

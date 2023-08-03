@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     "phonenumber_field",
     "corsheaders",
+    'multiselectfield',
     # Internal Apps
     'api.apps.ApiConfig',
     'user.apps.UserConfig',

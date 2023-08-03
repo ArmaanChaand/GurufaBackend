@@ -3,6 +3,8 @@ from user.models import User
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from phonenumber_field.modelfields import PhoneNumberField
+from multiselectfield import MultiSelectField
 # Create your models here.
 
 class Guru(models.Model):
@@ -32,3 +34,26 @@ def update_user_roles(sender, instance, **kwargs):
     instance.user_id.user_roles = 'Parent'
     instance.user_id.is_a_guru = False
     instance.user_id.save()
+
+
+SKILLS_CHOICES = (
+    ("Chess", "Chess"),
+    ("Rubik's Cube", "Rubik's Cube"),
+    ("Vedic Maths", "Vedic Maths"),
+    ("Yoga", "Yoga"),
+    ("Other", "Other"),
+)
+class BecomeAGuru(models.Model):
+    full_name         = models.CharField(_("Full name"), max_length=100, blank=False, null=False)
+    email             = models.EmailField(_("Email address"), blank=False, null=False, unique=True)
+    phone_number      = PhoneNumberField(_("Phone Number "), blank=False, null=False)
+    yrs_experience    = models.DecimalField(verbose_name=_("Years of teaching experience"), decimal_places=1, max_digits=3, blank=False, null=False)
+    skills            = MultiSelectField(max_length=100, max_choices=5, verbose_name=_("Skills"), choices=SKILLS_CHOICES, blank=False, null=False)
+    other_skills      = models.CharField(_("Other Skills"), max_length=100, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = 'Become A Guru Application'
+        verbose_name_plural = 'Become A Guru Applications'
+    
+    def __str__(self) -> str:
+        return f"{self.full_name}" 

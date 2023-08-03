@@ -63,7 +63,7 @@ class kidInfoSerializer(serializers.ModelSerializer):
     my_purchases = KidsPurchaseSerializer(many=True, read_only=True)
     class Meta: 
         model = Kid
-        fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases']
+        fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases', 'kid_gender']
     
     def validate_kid_profile(self, value):
         if value and value.size > 500 * 1024:  

@@ -17,6 +17,5 @@ urlpatterns = [
     path('home/', include('home.urls')),
     path('courses/', include('course.urls')),
     path('purchase/', include('purchase.urls')),
-    
-    
+    path('guru/', include('guru.urls')),
 ]

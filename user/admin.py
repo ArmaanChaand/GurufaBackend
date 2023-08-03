@@ -43,6 +43,7 @@ class KidModelAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Name', {'fields': ['kid_first_name', 'kid_last_name']}),
         ('Age', {'fields': ['kid_age']}),
+        ('Gender', {'fields': ['kid_gender']}),
         ('Parent', {'fields': ['kid_parent']}), 
     ]
 admin.site.register(Kid, KidModelAdmin)
