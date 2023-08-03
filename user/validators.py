@@ -1,6 +1,7 @@
 import random 
 import string
 import re
+from django.core.exceptions import ValidationError
 
 def password_validator(password):
     # Check if password is at least 8 characters long
@@ -38,3 +39,9 @@ def generate_strong_password(length=12):
         validation_result = password_validator(password)
         if validation_result[0]:
             return validation_result[1]
+
+
+def validate_kids_age(age):
+    if not (5 <= age <= 15):
+        raise ValidationError("Kid's age must be between 2 and 15.")
+

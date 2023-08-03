@@ -136,7 +136,6 @@ def saveMyKid(request, kid_id=None):
             serializer = kidInfoSerializer(instance=kid, data=updated_data, partial=True)
     else:
         serializer = kidInfoSerializer(data=request.data)
-    print(serializer)
     if serializer.is_valid():
         serializer.save(kid_parent=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
