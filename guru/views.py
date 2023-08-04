@@ -10,6 +10,7 @@ from .models import BecomeAGuru
 def becomeAGuruView(request):
     become_a_guru_serializer = BecomeAGuruSerializer(data=request.data)
     if become_a_guru_serializer.is_valid():
+        become_a_guru_serializer.save()
         return Response(data=become_a_guru_serializer.data, status=status.HTTP_201_CREATED)
     else :
         return Response(data=become_a_guru_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
