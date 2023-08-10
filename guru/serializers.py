@@ -2,7 +2,6 @@ from rest_framework import serializers, fields
 from .models import BecomeAGuru, SKILLS_CHOICES
 
 def validate_skills(value):
-    print(value)
     if not value:
         raise serializers.ValidationError("At least one skill must be selected.")
     return value
