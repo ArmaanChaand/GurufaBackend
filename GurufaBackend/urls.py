@@ -19,6 +19,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from user.verifyViews import verify_email
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView , PasswordChangeDoneView, PasswordResetCompleteView
 
 
 
@@ -27,7 +29,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('verify/<str:uidb64>/<str:token>/', verify_email, name='verify_email'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # Password Reset    
+    path('reset_password/', PasswordResetView.as_view(), name='password_reset'),
+    path('reset_password_sent/', PasswordChangeDoneView.as_view(), name='password_reset_done'),
+    path('reset_password_complete/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 admin.site.site_header = "Gurufa Administration"

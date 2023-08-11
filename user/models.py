@@ -45,7 +45,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
-        return self._create_user(email, password, **extra_fields)
+        return self._create_user(email=email, password=password, **extra_fields)
 
 class User(AbstractUser, PermissionsMixin): 
     picture           = models.ImageField(upload_to='images/users/', null=True, blank=True)

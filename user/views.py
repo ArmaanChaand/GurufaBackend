@@ -12,7 +12,7 @@ from purchase.models import Purchase
 from purchase.serializers import PurchaseSerializer
 from course.models import Course
 from course.serializers import CourseSerializer
-from .verifyViews import send_verification_email, sendOTP
+from .verifyViews import send_verification_email, sendOTP, send_password_reset_email
 
 @api_view(http_method_names=['GET'])
 def userAPIView(request):
@@ -109,6 +109,37 @@ def getUserInfo(request):
     data = userInfoSerializer(user, many=False).data
     response_data['user'] = data
     return Response(response_data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def updateUserName(request):
+    user = request.user
+    if request.method == 'POST':
+        serializer = userInfoSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def updateUserKey(request):
+    email = request.user.email
+    password = request.data['password']
+    if request.method == 'POST':
+        user = authenticate(request, email=email, password=password)
+        print(email, password)
+        response_data = {}
+        if user is not None:
+            send_password_reset_email(request)
+            response_data['authenticated'] = True
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            response_data['authenticated'] = False
+            response_data['detail'] = 'Incorrect Password'
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'error' : 'Some error ocurred'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(http_method_names=['GET'])
 @permission_classes([IsAuthenticated])

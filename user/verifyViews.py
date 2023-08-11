@@ -95,3 +95,23 @@ def verify_phone(request):
         return Response({'message': 'OTP verification successful.', 'user_data': userInfoSerializer(user).data}, status=status.HTTP_200_OK)
     except OTP.DoesNotExist:
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+def send_password_reset_email(request):
+    user = request.user
+    # Generate the verification link
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    domain = get_current_site(request).domain
+    verification_link = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+
+    # Build the email subject and content
+    subject = 'Reset Your Gurufa Password'
+    message = render_to_string('reset_password_email.html', {
+        'first_name': user.first_name,
+        'email': user.email,
+        'verification_link': f'https://{domain}{verification_link}',
+    })
+
+    # Send the email
+    send_mail(subject, '', 'your_email@example.com', [user.email], html_message=message)
