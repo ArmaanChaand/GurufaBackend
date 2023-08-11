@@ -33,7 +33,7 @@ def send_verification_email(request, user):
     })
 
     # Send the email
-    send_mail(subject, '', 'your_email@example.com', [user.email], html_message=message)
+    send_mail(subject, '', settings.DEFAULT_FROM_EMAIL , [user.email], html_message=message)
 
 def verify_email(request, uidb64, token):
     try:
@@ -114,7 +114,7 @@ def send_password_reset_email(request):
     })
 
     # Send the email
-    send_mail(subject, '', 'your_email@example.com', [user.email], html_message=message)
+    send_mail(subject, '', settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
 
 def resetKeyView(request, uidb64, token):
     try:
