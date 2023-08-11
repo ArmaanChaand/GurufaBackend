@@ -6,8 +6,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
-from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.http import HttpResponse, Http404, JsonResponse
+from django.shortcuts import redirect, render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,7 +15,7 @@ from .models import User, OTP
 from .serializers import userInfoSerializer
 import random
 from twilio.rest import Client
-
+from .validators import password_validator
 
 def send_verification_email(request, user):
     # Generate the verification link
@@ -103,15 +103,50 @@ def send_password_reset_email(request):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     domain = get_current_site(request).domain
-    verification_link = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+    reset_link = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
 
     # Build the email subject and content
     subject = 'Reset Your Gurufa Password'
     message = render_to_string('reset_password_email.html', {
         'first_name': user.first_name,
         'email': user.email,
-        'verification_link': f'https://{domain}{verification_link}',
+        'reset_link': f'https://{domain}{reset_link}',
     })
 
     # Send the email
     send_mail(subject, '', 'your_email@example.com', [user.email], html_message=message)
+
+def resetKeyView(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            password = request.POST.get('password') 
+            validateKay =  password_validator(password)
+            if validateKay[0] :
+                user.set_password(password)
+                user.save()
+                data = {
+                    'success': True,
+                }
+                return JsonResponse(data=data)
+            else:
+                data = {
+                    'success': False,
+                    'error': validateKay[1]
+                }
+                return JsonResponse(data=data)
+
+        context = {
+            'first_name': user.first_name
+        }
+        return render(request=request, template_name='reset_password.html', context=context)
+        
+    else:
+        raise Http404()
+        # return redirect('http://localhost:5173/')
+        # return HttpResponse('email_verification_failed')  # Redirect to a failure page
