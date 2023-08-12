@@ -17,6 +17,10 @@ import random
 from twilio.rest import Client
 from .validators import password_validator
 
+def sendHtmlEmail(subject,  recipient_list, email_template_name, email_template_context):
+    html_message = render_to_string(email_template_name, email_template_context)
+    send_mail(subject=subject, message='', from_email=settings.DEFAULT_FROM_EMAIL,recipient_list=recipient_list, html_message=html_message)
+
 def send_verification_email(request, user):
     # Generate the verification link
     token = default_token_generator.make_token(user)
@@ -26,14 +30,15 @@ def send_verification_email(request, user):
 
     # Build the email subject and content
     subject = 'Verify your email address'
-    message = render_to_string('verify_email.html', {
+    context = {
         'first_name': user.first_name,
         'email': user.email,
         'verification_link': f'https://{domain}{verification_link}',
-    })
+    }
 
     # Send the email
-    send_mail(subject, '', settings.DEFAULT_FROM_EMAIL , [user.email], html_message=message)
+    sendHtmlEmail(subject=subject, recipient_list=[user.email], email_template_name='verify_email.html', email_template_context=context)
+
 
 def verify_email(request, uidb64, token):
     try:
@@ -107,14 +112,14 @@ def send_password_reset_email(request):
 
     # Build the email subject and content
     subject = 'Reset Your Gurufa Password'
-    message = render_to_string('reset_password_email.html', {
+    context = {
         'first_name': user.first_name,
         'email': user.email,
         'reset_link': f'https://{domain}{reset_link}',
-    })
+    }
 
     # Send the email
-    send_mail(subject, '', settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
+    sendHtmlEmail(subject=subject, recipient_list=[user.email], email_template_name='reset_password_email.html', email_template_context=context)
 
 def resetKeyView(request, uidb64, token):
     try:
@@ -133,6 +138,14 @@ def resetKeyView(request, uidb64, token):
                 data = {
                     'success': True,
                 }
+                # Send Confirmation Email
+                subject = 'Password Changed Successfully'
+                context = {
+                    'first_name': user.first_name,
+                    'email': user.email,
+                }
+
+                sendHtmlEmail(subject=subject, recipient_list=[user.email], email_template_name='password_changed_email.html', email_template_context=context)
                 return JsonResponse(data=data)
             else:
                 data = {

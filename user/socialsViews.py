@@ -1,6 +1,4 @@
 from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,7 +10,7 @@ from .models import User
 from .serializers import userInfoSerializer, registerUserSerializer
 
 from .validators import generate_strong_password
-
+from .verifyViews import sendHtmlEmail
 @api_view(['POST'])
 def googleOAuth2(request):
     id_token = request.data.get('credential')
@@ -70,15 +68,16 @@ def googleOAuth2(request):
                         response_data['token'] = token
                         user_data = userInfoSerializer(user, many=False).data
                         response_data['user_data'] = user_data
-                        send_mail(
+
+                        """Send Welcome Email"""
+                        sendHtmlEmail(
                             subject='Welcome to Gurufa Kids',
-                            message='',
-                            html_message= render_to_string('welcome_email.html', {
+                            recipient_list=[user_data['email']],
+                            email_template_name='welcome_email.html',
+                            email_template_context={
                                 'first_name': user_data['first_name']
-                            }),
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[user_data['email']]
-                            )
+                            }
+                        )
                         return Response(response_data, status=status.HTTP_201_CREATED)
                     else:
                         response_data['errors'] = "Some error ocurred! Try again."
