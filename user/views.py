@@ -194,4 +194,20 @@ def getPurchasedCourses(request):
         return Response(data=purchase_serializer.data, status=status.HTTP_200_OK)
     except Purchase.DoesNotExist:
         return Response({'error': 'No purchased courses found.'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])  # Ensure user is authenticated
+def updatePhoneNuber(request):
+    user = request.user  # Retrieve the authenticated user
     
+    if request.method == 'POST':
+        serializer = userInfoSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            sendOTP(user=user)
+            data = {
+                'user_data': serializer.data,
+                'otp': True
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
