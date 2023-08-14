@@ -43,11 +43,16 @@ SKILLS_CHOICES = (
     ("Yoga", "Yoga"),
     ("Other", "Other"),
 )
+EXPERIENCE_CHOICES = (
+    ("0 Years", "0 Years"),
+    ("1-3 Years", "1-3 Years"),
+    ("More Than 3 Years", "More Than 3 Years"),
+)
 class BecomeAGuru(models.Model):
     full_name         = models.CharField(_("Full name"), max_length=100, blank=False, null=False)
     email             = models.EmailField(_("Email address"), blank=False, null=False)
     phone_number      = PhoneNumberField(_("Phone Number "), blank=False, null=False)
-    yrs_experience    = models.DecimalField(verbose_name=_("Years of teaching experience"), decimal_places=1, max_digits=3, blank=False, null=False)
+    yrs_experience    = models.CharField(verbose_name=_("Years of teaching experience"),max_length=50, choices=EXPERIENCE_CHOICES, blank=False, null=False)
     skills            = MultiSelectField(max_length=100, max_choices=5, verbose_name=_("Skills"), choices=SKILLS_CHOICES, blank=False, null=False)
     other_skills      = models.CharField(_("Other Skills"), max_length=100, blank=True, null=True)
     
