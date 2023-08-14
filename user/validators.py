@@ -42,6 +42,6 @@ def generate_strong_password(length=12):
 
 
 def validate_kids_age(age):
-    if not (2 <= age <= 15):
-        raise ValidationError("Kid's age must be between 2 and 15.")
+    if not (5 <= age <= 15):
+        raise ValidationError("Kid's age must be between 5 and 15.")
 
