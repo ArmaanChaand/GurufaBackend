@@ -17,6 +17,10 @@ class Purchase(models.Model):
         ('FAILED', 'Failed'),
     )
     payment_status  = models.CharField(_("Payment Status"),max_length=10, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
+    PAYMENT_METHOD_CHOICES = (
+        ('Razorpay', 'Razorpay'),
+    )
+    payment_method  = models.CharField(_("Payment Method"),max_length=10, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True)
     order_id        = models.CharField(_("Order ID"), max_length=200, null=True, blank=True)   
     payment_id      = models.CharField(_("Payment ID"), max_length=200, null=True, blank=True)   
     order_signature = models.CharField(_("Razorpay Signature"), max_length=200, null=True, blank=True)   

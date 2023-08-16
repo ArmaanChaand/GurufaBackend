@@ -12,7 +12,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Purchase
-        fields = ['course_level', 'schedule', 'plan_selected', 'purchase_price', 'kids_selected']
+        fields = ['course_level', 'schedule', 'plan_selected', 'purchase_price', 'kids_selected', 'order_id', 'payment_method']
     
     def to_representation(self, instance):
         if instance.payment_status == 'PAID':

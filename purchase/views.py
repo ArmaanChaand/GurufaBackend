@@ -91,8 +91,10 @@ def successPurchaseRazorpay(request):
         purchase.order_signature = razorpay_signature
         if purchase.order_id == razorpay_order_id:
             purchase.payment_status = 'PAID'
+            purchase.payment_method = 'Razorpay'
             purchase.save()
-            return Response({"updated": True}, status=status.HTTP_200_OK)
+            purchase_data = PurchaseSerializer(purchase)
+            return Response({"updated": True, 'purchase_data': purchase_data.data},  status=status.HTTP_200_OK)
         else :
             return Response({"updated": False, "message": "Order ID didn't matched"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -113,6 +115,7 @@ def failedPurchaseRazorpay(request):
         purchase.order_signature = razorpay_signature
         if purchase.order_id == razorpay_order_id:
             purchase.payment_status = 'FAILED'
+            purchase.payment_method = 'Razorpay'
             purchase.save()
             return Response({"updated": True}, status=status.HTTP_200_OK)
         else :
