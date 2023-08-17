@@ -4,13 +4,14 @@ from .views import (userAPIView, registerUser, authenticateUser, logoutUser, get
                     updatePhoneNuber
                     )
 from .socialsViews import googleOAuth2
-from .verifyViews import verify_phone
+from .verifyViews import verify_phone, resendOtp
 urlpatterns = [
 
     path('auth/register/', registerUser , name="user-register"),
     path('auth/login/', authenticateUser , name="user-login"),
     path('auth/logout/', logoutUser , name="user-logout"),
     path('auth/google/', googleOAuth2 , name="user-google"),
+    path('auth/send/otp/', resendOtp , name="user-resend-otp"),
     path('auth/verify/phone/', verify_phone , name="user-verify-otp"),
 
     path('edit/name/', updateUserName , name="user-edit-name"),

@@ -8,7 +8,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import redirect, render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User, OTP
@@ -89,6 +90,17 @@ def sendOTP(user):
         raise error
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def resendOtp(request):
+    try:
+        sendOTP(request.user)
+        return Response({'sent': True}, status=status.HTTP_200_OK)
+    except Exception as error:
+        return Response({'sent': False}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def verify_phone(request):
     user = request.user
     otp_code = request.data.get('OTP')

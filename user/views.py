@@ -45,8 +45,6 @@ def authenticateUser(request):
             if not user.is_phone_verified:
                 response_data['otp'] = True
                 sendOTP(user)
-            if not user.is_email_verified:
-                send_verification_email(request=request, user=user)
             return Response(response_data, status=status.HTTP_200_OK)
         else:
             response_data['success']= False
