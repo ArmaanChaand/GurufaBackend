@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import Course, Levels, Plans, Schedule, ScheduleTiming
-from home.models import FAQs
+from home.models import FAQs, Review
 
 class LevelsModelInline(admin.TabularInline):
     model = Levels
@@ -11,8 +11,13 @@ class LevelsModelInline(admin.TabularInline):
 class FAQsModelInline(admin.TabularInline):
     model = FAQs
     extra = 0
-class BatchModelInline(admin.TabularInline):
+    
+class ScheduleModelInline(admin.TabularInline):
     model = Schedule
+    extra = 0
+
+class ReviewModelInline(admin.TabularInline):
+    model = Review
     extra = 0
 
 class CourseModelAdmin(admin.ModelAdmin):
@@ -25,7 +30,7 @@ class CourseModelAdmin(admin.ModelAdmin):
         ('Gurus', {'fields': ['about_guru']}),
     ]
 
-    inlines = [LevelsModelInline, BatchModelInline, FAQsModelInline]
+    inlines = [LevelsModelInline, ScheduleModelInline, FAQsModelInline, ReviewModelInline]
     
 admin.site.register(Course, CourseModelAdmin)
 
@@ -42,8 +47,7 @@ admin.site.register(Levels, LevelsModelAdmin)
 class PlansModelAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Plan Description', {'fields': ['name', 'description']}),
-        ('Siblings', {'fields': ['count_sibling']}),
-        ('Plan Prices', {'fields': ['actual_price', 'original_price']}),
+        ('Plan Prices', {'fields': ['price', 'discount_percent']}),
     ]
 admin.site.register(Plans, PlansModelAdmin)
 

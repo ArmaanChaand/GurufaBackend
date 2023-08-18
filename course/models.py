@@ -58,12 +58,23 @@ class Levels(models.Model):
         return f"{ self.name } ({self.to_course})"
     
 class Plans(models.Model):
-    name        = models.CharField(_("Plan Name"), max_length=100, null=False, blank=False)
+    PLAN_NAMES_CHOICES = (
+        ('One-on-One', 'One-on-One'),
+        ('Batch', 'Batch'),
+        ('Siblings', 'Siblings'),
+        ('Demo Class', 'Demo Class'),
+    )
+    name        = models.CharField(_("Plan Name"), max_length=100, null=False, blank=False, choices=PLAN_NAMES_CHOICES)
     slug       = models.SlugField(_("Slug"), max_length=200, unique=True, editable=False)
     description = models.CharField(_("Plan Description"), max_length=100, null=True, blank=True)
-    actual_price   = models.DecimalField(_("Price (Discounted)"), max_digits=10, decimal_places=2)
-    original_price = models.DecimalField(_("Original Price"), max_digits=10, decimal_places=2)
-    count_sibling  = models.BooleanField(_("Count Number of Siblings or Not?"), default=False, null=False, blank=False)
+    price   = models.DecimalField(_("Price"), max_digits=10, decimal_places=2)
+    discount_percent = models.DecimalField(verbose_name=_("Discont Per cent"),max_digits=5, decimal_places=2)
+
+    @property
+    def discounted_price(self):
+        discount_amount = self.price * (self.discount_percent / 100)
+        discounted_price = self.price - discount_amount
+        return discounted_price
 
     class Meta:
         verbose_name = 'Course Plans'

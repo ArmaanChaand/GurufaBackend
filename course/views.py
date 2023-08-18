@@ -15,14 +15,15 @@ def getAllCourses(request):
         'plans': plans_serializer.data,
         'courses': course_serializer.data
     }
-    return Response(data)           
+    return Response(data)               
 
 @api_view(['GET'])
 def getAllSchedules(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
-        batches = Schedule.objects.filter(to_course=course)
-        serializer = ScheduleSerializer(batches, many=True)
+        plan = Plans.objects.get(slug=request.GET.get('plan_slug'))
+        schedules = Schedule.objects.filter(to_course=course, plan=plan)
+        serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data)
-    except Course.DoesNotExist:
-        return Response({'error': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Course.DoesNotExist or Plans.DoesNotExist:
+        return Response({'error': 'Course or Plan not found.'}, status=status.HTTP_404_NOT_FOUND)

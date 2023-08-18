@@ -7,7 +7,7 @@ from user.serializers import kidInfoSerializer
 class PlansSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plans
-        fields = ['id', 'name','slug', 'description', 'actual_price', 'original_price', 'count_sibling']
+        fields = ['id', 'name','slug', 'description', 'price', 'discounted_price', 'discount_percent']
 
 class CourseSerializerSmall(serializers.ModelSerializer):
     class Meta:

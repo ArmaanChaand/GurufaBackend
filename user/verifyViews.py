@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils import http, timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.sites.shortcuts import get_current_site
@@ -23,41 +24,40 @@ def sendHtmlEmail(subject,  recipient_list, email_template_name, email_template_
     send_mail(subject=subject, message='', from_email=settings.DEFAULT_FROM_EMAIL,recipient_list=recipient_list, html_message=html_message)
 
 def send_verification_email(request, user):
-    # Generate the verification link
+    # Generate the verification link with expiration time
     token = default_token_generator.make_token(user)
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    uid = http.urlsafe_base64_encode(force_bytes(user.pk))
     domain = get_current_site(request).domain
     verification_link = reverse('verify_email', kwargs={'uidb64': uid, 'token': token})
-
+    expiration_time = timezone.now() + timezone.timedelta(days=2)  # Add 2 days to current time
+    verification_link_with_expiry = f'{verification_link}?expires={expiration_time.timestamp()}'
     # Build the email subject and content
     subject = 'Verify your email address'
     context = {
         'first_name': user.first_name,
         'email': user.email,
-        'verification_link': f'https://{domain}{verification_link}',
+        'verification_link': f'https://{domain}{verification_link_with_expiry}', 
     }
-
     # Send the email
     sendHtmlEmail(subject=subject, recipient_list=[user.email], email_template_name='verify_email.html', email_template_context=context)
 
 
 def verify_email(request, uidb64, token):
     try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
+         uid = force_str(http.urlsafe_base64_decode(uidb64))
+         user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_email_verified = True  # Update the user's status or perform any other desired action
-        user.save()
-        return redirect('https://gurufa.netlify.app/')
-        # return redirect('http://localhost:5173/')
-        # return HttpResponse('email_verification_successful')  # Redirect to a success page
+         user = None
+    if user is not None and default_token_generator.check_token(user, token): 
+        expiration_timestamp = float(request.GET.get('expires', 0))
+        if timezone.now().timestamp() <= expiration_timestamp:
+             user.is_email_verified = True  # Update the user's status or perform any other desired action
+             user.save()
+             return redirect('https://gurufa.netlify.app/')
+        else:
+             return HttpResponse('Verification link has expired.')
     else:
-        return redirect('https://gurufa.netlify.app/')
-        # return redirect('http://localhost:5173/')
-        # return HttpResponse('email_verification_failed')  # Redirect to a failure page
+         return redirect('https://gurufa.netlify.app/')
 
 
 
