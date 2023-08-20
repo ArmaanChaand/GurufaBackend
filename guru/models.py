@@ -5,11 +5,15 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from phonenumber_field.modelfields import PhoneNumberField
 from multiselectfield import MultiSelectField
+from simple_history.models import HistoricalRecords
 # Create your models here.
 
 class Guru(models.Model):
-    user_id = models.OneToOneField(User, null=False, blank=False, on_delete=models.CASCADE)
-    experience = models.FloatField(_("Years Of Experience"), null=False, blank=False, default=0)
+    is_active   = models.BooleanField(default=True, null=False, blank=False)
+    user_id     = models.OneToOneField(User, null=False, blank=False, on_delete=models.CASCADE)
+    experience  = models.FloatField(_("Years Of Experience"), null=False, blank=False, default=0)
+
+    history     = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Guru'
@@ -55,6 +59,8 @@ class BecomeAGuru(models.Model):
     yrs_experience    = models.CharField(verbose_name=_("Years of teaching experience"),max_length=50, choices=EXPERIENCE_CHOICES, blank=False, null=False)
     skills            = MultiSelectField(max_length=100, max_choices=5, verbose_name=_("Skills"), choices=SKILLS_CHOICES, blank=False, null=False)
     other_skills      = models.CharField(_("Other Skills"), max_length=100, blank=True, null=True)
+
+    history           = HistoricalRecords()
     
     class Meta:
         verbose_name = 'Become A Guru Application'

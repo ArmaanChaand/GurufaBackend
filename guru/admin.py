@@ -4,11 +4,12 @@ from .models import Guru, BecomeAGuru
 # Register your models here.
 class GuruModelAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'get_phone_number']
-    list_filter = ['experience']
+    list_filter = ['experience', 'is_active']
 
     fieldsets = [
         ('User associated with', {'fields': ['user_id']}),
         ('More Info', {'fields': ['experience']}),
+        ('Activity Status', {'fields': ['is_active']}),
     ]
     def get_phone_number(self, obj):
         return obj.user_id.phone_number

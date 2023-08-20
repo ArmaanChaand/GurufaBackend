@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import (userAPIView, registerUser, authenticateUser, logoutUser, getUserInfo,
                     getMyKids,saveMyKid, deleteAKid, getPurchasedCourses, updateUserName, updateUserKey,
-                    updatePhoneNuber
+                    updatePhoneNuber, forgotKeyEmail
                     )
 from .socialsViews import googleOAuth2
 from .verifyViews import verify_phone, resendOtp
@@ -16,6 +16,7 @@ urlpatterns = [
 
     path('edit/name/', updateUserName , name="user-edit-name"),
     path('edit/key/', updateUserKey , name="user-edit-key"),
+    path('edit/key/forgot/', forgotKeyEmail , name="user-forgot-key"),
     path('edit/phone/', updatePhoneNuber , name="user-edit-key"),
     
     path('info/', getUserInfo , name="user-info"),

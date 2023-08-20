@@ -114,8 +114,7 @@ def verify_phone(request):
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-def send_password_reset_email(request):
-    user = request.user
+def send_password_reset_email(request, user):
     # Generate the verification link
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))

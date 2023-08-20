@@ -11,6 +11,8 @@ class FAQsSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     review_by = userInfoSerializer(many=False, read_only=True)
     created_at = serializers.DateTimeField(format='%d/%m/%Y', read_only=True)
+    
     class Meta:
         model = Review
         fields = '__all__'
+    

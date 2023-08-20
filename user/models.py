@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from enum import Enum
 from .validators import validate_kids_age
-
+from simple_history.models import HistoricalRecords
 # Create your models here.
 
 class AuthProviders(Enum):
@@ -62,10 +62,8 @@ class User(AbstractUser, PermissionsMixin):
     is_phone_verified = models.BooleanField(_("Phone verified"),default=False, null=False, blank=False)
     whatsapp_update   = models.BooleanField(_("Opted for WhatsApp Update"),default=False, null=False, blank=False)
 
+    history           = HistoricalRecords()
     
-    
-
-
     objects = CustomUserManager()
 
     EMAIL_FIELD = "email"
@@ -92,6 +90,8 @@ class OTP(models.Model):
     otp_code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    history    = HistoricalRecords()
+
     def __str__(self):
         return f"{self.user.username} - {self.otp_code}"
         
@@ -107,6 +107,8 @@ class Kid(models.Model):
     kid_first_name    = models.CharField(_("First name"), max_length=50, blank=False, null=False)
     kid_last_name     = models.CharField(_("Last name"), max_length=50, blank=False, null=False)
     kid_age           = models.PositiveIntegerField(_("Kid's Age (In Years)"), default=5, validators=[validate_kids_age])
+    is_active         = models.BooleanField(default=True, null=False, blank=False)
+    history           = HistoricalRecords()
 
 
     class Meta:

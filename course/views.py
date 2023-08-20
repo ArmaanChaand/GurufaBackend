@@ -6,9 +6,9 @@ from .serializers import CourseSerializer, LevelsSerializer, PlansSerializer, Sc
 
 @api_view(http_method_names=['GET'])
 def getAllCourses(request):    
-    plans = Plans.objects.all()
+    plans = Plans.objects.filter(is_active=True)
     plans_serializer = PlansSerializer(plans, many=True)
-    courses = Course.objects.all()
+    courses = Course.objects.filter(is_active=True)
     course_serializer = CourseSerializer(courses, many=True)
 
     data = {            
@@ -22,7 +22,7 @@ def getAllSchedules(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
         plan = Plans.objects.get(slug=request.GET.get('plan_slug'))
-        schedules = Schedule.objects.filter(to_course=course, plan=plan)
+        schedules = Schedule.objects.filter(to_course=course, plan=plan, is_active=True)
         serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data)
     except Course.DoesNotExist or Plans.DoesNotExist:

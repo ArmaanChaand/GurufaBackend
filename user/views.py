@@ -129,7 +129,7 @@ def updateUserKey(request):
         print(email, password)
         response_data = {}
         if user is not None:
-            send_password_reset_email(request)
+            send_password_reset_email(request=request, user=request.user)
             response_data['authenticated'] = True
             return Response(response_data, status=status.HTTP_200_OK)
         else:
@@ -144,7 +144,7 @@ def updateUserKey(request):
 def getMyKids(request):
     try:
         user = request.user 
-        kids = Kid.objects.filter(kid_parent=user)
+        kids = Kid.objects.filter(kid_parent=user, is_active=True)
         serializer = kidInfoSerializer(kids, many=True)
         return Response(serializer.data)
 
@@ -175,11 +175,12 @@ def saveMyKid(request, kid_id=None):
 @permission_classes([IsAuthenticated])
 def deleteAKid(request, kid_id):
     try:
-        instance = Kid.objects.get(id=kid_id)
+        the_kid = Kid.objects.get(id=kid_id)
     except Kid.DoesNotExist:
         return Response({"error": "Kid not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    instance.delete()
+    the_kid.is_active = False
+    the_kid.save()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
@@ -209,3 +210,16 @@ def updatePhoneNuber(request):
             }
             return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def forgotKeyEmail(request):
+    if request.method == 'POST':
+        email = request.data['email']
+        try:
+            user = User.objects.get(email=email)
+            send_password_reset_email(request=request, user=user)
+            return Response({'email_sent': True}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': "User with this email address does not exists."}, status=status.HTTP_400_BAD_REQUEST)
+

@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "corsheaders",
     'multiselectfield',
+    'simple_history',
     # Internal Apps
     'api.apps.ApiConfig',
     'user.apps.UserConfig',
@@ -89,6 +90,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Railway
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    # Django Simple History
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'GurufaBackend.urls'

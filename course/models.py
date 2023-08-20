@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.text import slugify
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
-
+from simple_history.models import HistoricalRecords
 # Create your models here.
 
 def validate_course_icon_size(value):
@@ -21,13 +21,16 @@ def validate_course_banner_size(value):
         raise ValidationError(_("The file size must be less than 800KB."))  
 
 class Course(models.Model):
+    is_active = models.BooleanField(default=True, null=False, blank=False)
     name          = models.CharField(_("Course Name"), max_length=200, null=False, blank=False)
     slug          = models.SlugField(_("Slug"), max_length=200, unique=True, editable=False)
     overview      = models.TextField(_("Course Overview"), null=True, blank=True)
     about_guru    = models.TextField(_("About Guru"), null=True, blank=True)
     course_icon   = models.ImageField(upload_to='images/courses/', validators=[validate_course_icon_size])
     course_banner = models.ImageField(upload_to='images/courses/', validators=[validate_course_banner_size])
-    
+
+    history       = HistoricalRecords()
+
     class Meta:
         verbose_name = 'Course'
         verbose_name_plural = 'Courses'
@@ -40,8 +43,13 @@ class Course(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
     
+    def get_max_capacity(self):
+        max_total_num_of_seats = self.course_schedules.aggregate(max_total_num_of_seats=models.Max('total_num_of_seats'))
+        return max_total_num_of_seats['max_total_num_of_seats'] or 5
+    
 
 class Levels(models.Model):
+    is_active = models.BooleanField(default=True, null=False, blank=False)
     to_course   = models.ForeignKey(to=Course, on_delete=models.CASCADE, null=False, blank=False, related_name='my_levels')
     name        = models.CharField(_("Level Name"), max_length=100, null=False, blank=False)
     description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
@@ -49,6 +57,8 @@ class Levels(models.Model):
     frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
     duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
     starts_from = models.DecimalField(_("Starts From"), max_digits=10, decimal_places=2)
+
+    history     = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Course Level'
@@ -64,11 +74,14 @@ class Plans(models.Model):
         ('Siblings', 'Siblings'),
         ('Demo Class', 'Demo Class'),
     )
-    name        = models.CharField(_("Plan Name"), max_length=100, null=False, blank=False, choices=PLAN_NAMES_CHOICES)
-    slug       = models.SlugField(_("Slug"), max_length=200, unique=True, editable=False)
-    description = models.CharField(_("Plan Description"), max_length=100, null=True, blank=True)
-    price   = models.DecimalField(_("Price"), max_digits=10, decimal_places=2)
-    discount_percent = models.DecimalField(verbose_name=_("Discont Per cent"),max_digits=5, decimal_places=2)
+    name               = models.CharField(_("Plan Name"), max_length=100, null=False, blank=False, choices=PLAN_NAMES_CHOICES)
+    slug               = models.SlugField(_("Slug"), max_length=200, unique=True, editable=False)
+    description        = models.CharField(_("Plan Description"), max_length=100, null=True, blank=True)
+    price              = models.DecimalField(_("Price"), max_digits=10, decimal_places=2)
+    discount_percent   = models.DecimalField(verbose_name=_("Discont Per cent"),max_digits=5, decimal_places=2)
+    is_active          = models.BooleanField(default=True, null=False, blank=False)
+
+    history            = HistoricalRecords()
 
     @property
     def discounted_price(self):
@@ -89,15 +102,18 @@ class Plans(models.Model):
         super().save(*args, **kwargs)
 
 class Schedule(models.Model):
-    to_course          = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course"))
-    plan              = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan"))
-    guru               = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"),
+    is_active           = models.BooleanField(default=True, null=False, blank=False)
+    to_course           = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course"), related_name='course_schedules')
+    plan                = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan"))
+    guru                = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"),
                                            )
-    schedule_name            = models.CharField(_("Schedule Name"), max_length=100)
-    start_date         = models.DateField(_("Start Date"))
-    end_date           = models.DateField(_("End Date"))
-    total_num_of_seats = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
-    seats_occupied     = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
+    schedule_name       = models.CharField(_("Schedule Name"), max_length=100)
+    start_date          = models.DateField(_("Start Date"))
+    end_date            = models.DateField(_("End Date"))
+    total_num_of_seats  = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
+    seats_occupied      = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
+
+    history             = HistoricalRecords()
 
 
     class Meta:
@@ -112,18 +128,16 @@ class Schedule(models.Model):
         return self.total_num_of_seats - self.seats_occupied
 
 class ScheduleTiming(models.Model):
-    batch = models.ForeignKey(to=Schedule, on_delete=models.CASCADE, related_name='timing')
-    DAY_CHOICES = (
-        ('MON', 'Monday'),
-        ('TUE', 'Tuesday'),
-        ('WED', 'Wednesday'),
-        ('THU', 'Thursday'),
-        ('FRI', 'Friday'),
-        ('SAT', 'Saturday'),
-        ('SUN', 'Sunday'),
-    )
-    day = models.CharField(_("Day"),max_length=3, choices=DAY_CHOICES, default='MON')
-    start_time = models.TimeField(_("Start Time") )
-    end_time = models.TimeField(_("End Time ") )
+    is_active   = models.BooleanField(default=True, null=False, blank=False)
+    batch       = models.ForeignKey(to=Schedule, on_delete=models.CASCADE, related_name='timing')
+    date        = models.DateField(_("Date"))
+    start_time  = models.TimeField(_("Start Time") )
+    end_time    = models.TimeField(_("End Time ") )
+
+    history     = HistoricalRecords()
+
+    class Meta:
+        verbose_name = 'Session'
+        verbose_name_plural = 'Sessions' 
 
     

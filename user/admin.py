@@ -38,13 +38,14 @@ admin.site.register(User, UserModelAdmin)
 class KidModelAdmin(admin.ModelAdmin):
     list_display = ['kid_first_name', 'kid_age', 'kid_parent'] 
     search_fields = ['kid_first_name', 'kid_last_name', 'kid_age']  
-    list_filter = ['kid_age', 'kid_parent']  # Enable filtering by specified fields
+    list_filter = ['kid_age', 'kid_parent', 'is_active']  # Enable filtering by specified fields
 
     fieldsets = [
         ('Name', {'fields': ['kid_first_name', 'kid_last_name']}),
         ('Age', {'fields': ['kid_age']}),
         ('Gender', {'fields': ['kid_gender']}),
         ('Parent', {'fields': ['kid_parent']}), 
+        ('Activity Status', {'fields': ['is_active']}),  
     ]
 admin.site.register(Kid, KidModelAdmin)
 admin.site.register(OTP)
