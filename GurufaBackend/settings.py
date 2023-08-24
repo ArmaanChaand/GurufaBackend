@@ -200,8 +200,15 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-  
+
 }
+
+if not DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
+            'rest_framework.renderers.JSONRenderer',
+            # Remove or comment out the next line to disable the Browsable API
+            # 'rest_framework.renderers.BrowsableAPIRenderer',
+        ]
 
 
 """SIMPLE JWT"""

@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils.text import slugify
@@ -40,7 +41,7 @@ class Course(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug or self.pk is None:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name) + str(uuid.uuid4().hex[:8])
         super().save(*args, **kwargs)
     
     def get_max_capacity(self):
@@ -77,8 +78,8 @@ class Plans(models.Model):
     name               = models.CharField(_("Plan Name"), max_length=100, null=False, blank=False, choices=PLAN_NAMES_CHOICES)
     slug               = models.SlugField(_("Slug"), max_length=200, unique=True, editable=False)
     description        = models.CharField(_("Plan Description"), max_length=100, null=True, blank=True)
-    price              = models.DecimalField(_("Price"), max_digits=10, decimal_places=2)
-    discount_percent   = models.DecimalField(verbose_name=_("Discont Per cent"),max_digits=5, decimal_places=2)
+    price              = models.DecimalField(_("Price"), max_digits=10, decimal_places=2,)
+    discount_percent   = models.DecimalField(verbose_name=_("Discont per cent"),max_digits=5, decimal_places=2)
     is_active          = models.BooleanField(default=True, null=False, blank=False)
 
     history            = HistoricalRecords()
@@ -95,6 +96,11 @@ class Plans(models.Model):
     
     def __str__(self) -> str:
         return f"{ self.name }" 
+    
+    def clean(self):
+        discounted_price = self.discounted_price
+        if discounted_price < 1:
+            raise ValidationError("Discounted price cannot be less than 1. Modify Price and/or Discount per cent.")
 
     def save(self, *args, **kwargs):
         if not self.slug or self.pk is None:

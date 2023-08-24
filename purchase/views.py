@@ -1,3 +1,4 @@
+import uuid
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -17,7 +18,6 @@ from user.models import User, Kid
 @permission_classes([IsAuthenticated])
 def CreatePurchase(request):
     course_level_id = request.data.get('course_level_id')
-    print(course_level_id)
     schedule_id = request.data.get('schedule_id')
     plan_selected_id = request.data.get('plan_selected_id')
     kids_selected_ids = request.data.get('kids_selected_ids')
@@ -53,6 +53,22 @@ def CreatePurchase(request):
         purchase_price=purchase_price
     )
     purchase.kids_selected.set(kids_selected)
+
+    """DEMO PLAN SELECTED"""
+    if plan_selected.slug == 'demo-class':
+        purchase.payment_status = 'PAID'
+        purchase.payment_method = 'Free Purchase'
+        schedule.seats_occupied = int(schedule.seats_occupied) + kids_selected.count()
+        purchase.order_id = "free_purchase_" + str(user.username) + str(uuid.uuid4().hex[:8])
+        purchase.payment_id = "Free Purchase"
+        purchase.order_signature = "Free Purchase"
+        schedule.save()
+        purchase.save()
+        data = {}
+        data['demo'] = True
+        data['purchase_data'] = PurchaseSerializer(purchase).data
+        return Response(data=data, status=status.HTTP_201_CREATED)
+
     """RAZORPAY ORDER"""
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
     DATA = {
@@ -63,18 +79,21 @@ def CreatePurchase(request):
             "purchase_id": purchase.id,
         }
     }
-    razorpay_order = client.order.create(data=DATA)
-    purchase.order_id = razorpay_order['id']
-    purchase.save()
-    response_data = {
-        'message': 'Purchase created successfully',
-        'order_created': True, 
-        'order': razorpay_order,
-        'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID 
+    try:
+        razorpay_order = client.order.create(data=DATA)
+        purchase.order_id = razorpay_order['id']
+        purchase.save()
+        response_data = {
+            'message': 'Purchase created successfully',
+            'order_created': True, 
+            'order': razorpay_order,
+            'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID 
 
-    }
-
-    return Response(response_data, status=status.HTTP_201_CREATED)
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    except:
+        
+        return Response({'error': 'Some error ocurred.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(http_method_names=['POST'])
@@ -92,6 +111,8 @@ def successPurchaseRazorpay(request):
         if purchase.order_id == razorpay_order_id:
             purchase.payment_status = 'PAID'
             purchase.payment_method = 'Razorpay'
+            purchase.schedule.seats_occupied = int(purchase.schedule.seats_occupied) + purchase.kids_selected.count()
+            purchase.schedule.save()
             purchase.save()
             purchase_data = PurchaseSerializer(purchase)
             return Response({"updated": True, 'purchase_data': purchase_data.data},  status=status.HTTP_200_OK)

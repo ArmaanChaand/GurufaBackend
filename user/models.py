@@ -40,6 +40,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        email = self.normalize_email(email)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
@@ -58,7 +59,7 @@ class User(AbstractUser, PermissionsMixin):
     last_name         = models.CharField(_("Last name"), max_length=150, blank=False, null=False)
     email             = models.EmailField(_("Email address"), blank=False, null=False, unique=True)
     is_email_verified = models.BooleanField(_("Email verified"), default=False, null=False, blank=False)
-    phone_number      = PhoneNumberField(_("Phone Number "), blank=True, null=True)
+    phone_number      = PhoneNumberField(_("Phone Number "), blank=True, null=True, unique=True)
     is_phone_verified = models.BooleanField(_("Phone verified"),default=False, null=False, blank=False)
     whatsapp_update   = models.BooleanField(_("Opted for WhatsApp Update"),default=False, null=False, blank=False)
 

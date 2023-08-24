@@ -64,6 +64,7 @@ def verify_email(request, uidb64, token):
 
 
 def sendOtpSMS(user_phone_number, otp):
+    user_phone_number='+918210485920' # Remove this line in production
     account_sid = settings.TWILIO_ACCOUNT_SID
     auth_token = settings.TWILIO_AUTH_TOKEN
     client = Client(account_sid, auth_token)
