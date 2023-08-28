@@ -67,12 +67,12 @@ class ScheduleSerializer(serializers.ModelSerializer):
         model = Schedule
         fields = ('id', 'schedule_name', 'start_date', 'end_date', 'seats_left', 'timing', 'to_course')
     
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        current_date = date.today()
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     current_date = date.today()
         
-        if instance.end_date < current_date:
-            """If end date has passed, return an empty representation"""
-            representation = {}
+    #     if instance.end_date < current_date:
+    #         """If end date has passed, return an empty representation"""
+    #         representation = {}
         
-        return representation   
+    #     return representation   

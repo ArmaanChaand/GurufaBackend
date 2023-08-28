@@ -62,7 +62,7 @@ class ScheduleTimingModelInline(admin.TabularInline):
     extra = 0
 
 class ScheduleModelAdmin(admin.ModelAdmin):
-    list_display = ['schedule_name', 'start_date', 'end_date']
+    list_display = ['schedule_name', 'start_date', 'end_date', 'plan']
     list_filter = ['is_active']
     fieldsets = [
         ('Schedule Name', {'fields': ['schedule_name']}),

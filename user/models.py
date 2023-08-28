@@ -6,6 +6,10 @@ from phonenumber_field.modelfields import PhoneNumberField
 from enum import Enum
 from .validators import validate_kids_age
 from simple_history.models import HistoricalRecords
+from django.core.exceptions import ValidationError
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from course.models import Course
 # Create your models here.
 
 class AuthProviders(Enum):
@@ -101,6 +105,8 @@ class KidsGender(Enum):
     FEMALE = 'Female'
     PNAS   = 'Prefer Not to Answer/State'
 
+
+
 class Kid(models.Model):
     kid_parent        = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="my_kids")
     kid_profile       = models.ImageField(upload_to='images/kids/', null=True, blank=True, default='images/kids/kids_avatar.png', verbose_name=_("Kid's Profile Picture"))
@@ -109,6 +115,8 @@ class Kid(models.Model):
     kid_last_name     = models.CharField(_("Last name"), max_length=50, blank=False, null=False)
     kid_age           = models.PositiveIntegerField(_("Kid's Age (In Years)"), default=5, validators=[validate_kids_age])
     is_active         = models.BooleanField(default=True, null=False, blank=False)
+    demo_courses      = models.ManyToManyField(to=Course, related_name='kids_taken_demo', verbose_name="Demo Course Purchased")
+
     history           = HistoricalRecords()
 
 
@@ -122,7 +130,16 @@ class Kid(models.Model):
     def __str__(self) -> str:
         return f"{self.get_full_name()} ({self.kid_parent})" 
     
+    def clean(self) -> None:
+        """Validate Number of Kids"""
+        user = self.kid_parent
+        if user and user.my_kids.filter(is_active=True).count() >= 7:
+            raise ValidationError("A user can have a maximum of 7 kids.")
+        return super().clean()
+    
     def save(self, *args, **kwargs):
+        """ Validate Name """
         self.kid_first_name = self.kid_first_name.capitalize()
         self.kid_last_name = self.kid_last_name.capitalize()
         super(Kid, self).save(*args, **kwargs)
+    

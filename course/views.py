@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from .models import Course, Plans, Levels, Schedule
 from .serializers import CourseSerializer, LevelsSerializer, PlansSerializer, ScheduleSerializer
+from datetime import date
 
 @api_view(http_method_names=['GET'])
 def getAllCourses(request):    
@@ -22,7 +23,12 @@ def getAllSchedules(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
         plan = Plans.objects.get(slug=request.GET.get('plan_slug'))
-        schedules = Schedule.objects.filter(to_course=course, plan=plan, is_active=True)
+        schedules_all = Schedule.objects.filter(to_course=course, plan=plan, is_active=True)
+        schedules = []
+        current_date = date.today()
+        for schedule in schedules_all:
+            if schedule.end_date >= current_date:
+                schedules.append(schedule)
         serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data)
     except Course.DoesNotExist or Plans.DoesNotExist:

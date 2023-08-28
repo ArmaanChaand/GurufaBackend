@@ -164,6 +164,8 @@ def saveMyKid(request, kid_id=None):
                 updated_data['kid_profile'] = kid.kid_profile  # Update the kid_profile field with the desired new value
             serializer = kidInfoSerializer(instance=kid, data=updated_data, partial=True)
     else:
+        if request.user.my_kids.filter(is_active=True).count() >= 7:
+            return Response({"global_error": "You cannot have more than 7 kids."}, status=status.HTTP_400_BAD_REQUEST)
         serializer = kidInfoSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(kid_parent=request.user)

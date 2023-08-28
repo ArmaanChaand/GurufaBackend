@@ -88,9 +88,10 @@ class kidInfoSerializer(serializers.ModelSerializer):
     my_purchases = KidsPurchaseSerializer(many=True, read_only=True)
     class Meta: 
         model = Kid
-        fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases', 'kid_gender']
+        fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases', 'kid_gender', 'demo_courses']
     
     def validate_kid_profile(self, value):
         if value and value.size > 500 * 1024:  
             raise serializers.ValidationError("Image size should be less than 500KB.")
         return value
+    

@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.conf import settings
+from django.db import transaction
 import razorpay
-
 from .models import Purchase
 from .serializers import PurchaseSerializer
 from course.models import Levels, Plans, Schedule
@@ -63,6 +63,10 @@ def CreatePurchase(request):
         purchase.payment_id = "Free Purchase"
         purchase.order_signature = "Free Purchase"
         schedule.save()
+        """Update the demo_course table for Kids"""
+        with transaction.atomic():
+            for kid in kids_selected:
+                kid.demo_courses.add(course_level.to_course)
         purchase.save()
         data = {}
         data['demo'] = True

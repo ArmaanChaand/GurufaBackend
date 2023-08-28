@@ -45,6 +45,7 @@ class KidModelAdmin(admin.ModelAdmin):
         ('Age', {'fields': ['kid_age']}),
         ('Gender', {'fields': ['kid_gender']}),
         ('Parent', {'fields': ['kid_parent']}), 
+        ('Demo Courses', {'fields': ['demo_courses']}),  
         ('Activity Status', {'fields': ['is_active']}),  
     ]
 admin.site.register(Kid, KidModelAdmin)
