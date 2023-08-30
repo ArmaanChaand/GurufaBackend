@@ -4,6 +4,7 @@ from home.serializers import FAQsSerializer
 from datetime import date
 from user.serializers import kidInfoSerializer
 from home.models import Review
+from django.db import models
 
 class PlansSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,13 +28,15 @@ class CourseSerializer(serializers.ModelSerializer):
     review_count = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField() 
     max_capacity = serializers.SerializerMethodField() 
+    purchase_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
         fields = [
             'id', 'name','course_icon', 'course_banner', 'slug', 
             'overview', 'about_guru', 'my_levels', 'course_faqs', 
-            'review_count', 'average_rating', 'max_capacity'
+            'review_count', 'average_rating', 'max_capacity',
+            'purchase_count'
         ]
 
     def get_review_count(self, obj):
@@ -49,6 +52,10 @@ class CourseSerializer(serializers.ModelSerializer):
     
     def get_max_capacity(self, obj):
         return obj.get_max_capacity()
+    
+    def get_purchase_count(self, obj):
+        # Count the related purchases for the course
+        return obj.my_levels.all().aggregate(purchase_count=models.Count('purchase'))['purchase_count']
     
 
 class ScheduleTimingSerializer(serializers.ModelSerializer):
