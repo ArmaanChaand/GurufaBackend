@@ -22,10 +22,12 @@ class Purchase(models.Model):
     PAYMENT_METHOD_CHOICES = (
         ('Free Purchase', 'Free Purchase'),
         ('Razorpay', 'Razorpay'),
+        ('Cashfree', 'Cashfree'),
     )
     payment_method  = models.CharField(_("Payment Method"),max_length=50, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True)
     order_id        = models.CharField(_("Order ID"), max_length=200, null=True, blank=True)   
     payment_id      = models.CharField(_("Payment ID"), max_length=200, null=True, blank=True)   
+    booking_id      = models.CharField(_("Booking ID"), max_length=120)
     order_signature = models.CharField(_("Razorpay Signature"), max_length=200, null=True, blank=True)   
     purchased_at    = models.DateTimeField(verbose_name="Purchased At", auto_now_add=True)
     last_modified_at= models.DateTimeField(verbose_name="Last Modified At", auto_now=True)

@@ -23,12 +23,7 @@ def getAllSchedules(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
         plan = Plans.objects.get(slug=request.GET.get('plan_slug'))
-        schedules_all = Schedule.objects.filter(to_course=course, plan=plan, is_active=True)
-        schedules = []
-        current_date = date.today()
-        for schedule in schedules_all:
-            if schedule.end_date >= current_date:
-                schedules.append(schedule)
+        schedules = Schedule.objects.filter(to_course=course, plan=plan, is_active=True)
         serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data)
     except Course.DoesNotExist or Plans.DoesNotExist:

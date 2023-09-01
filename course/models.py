@@ -114,8 +114,8 @@ class Schedule(models.Model):
     guru                = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"),
                                            )
     schedule_name       = models.CharField(_("Schedule Name"), max_length=100)
-    start_date          = models.DateField(_("Start Date"))
-    end_date            = models.DateField(_("End Date"))
+    # start_date          = models.DateField(_("Start Date"))
+    # end_date            = models.DateField(_("End Date"))
     total_num_of_seats  = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
     seats_occupied      = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
 

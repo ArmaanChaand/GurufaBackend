@@ -244,6 +244,10 @@ PHONENUMBER_DEFAULT_REGION = "IN"
 RAZORPAY_KEY_ID     = os.getenv('RAZORPAY_KEY_ID', "None")
 RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', "None")
 
+"""CASHFREE CREDENTIALS"""
+CASHFREE_APP_ID     = os.getenv('CASHFREE_APP_ID', "None")
+CASHFREE_SECRET_KEY = os.getenv('CASHFREE_SECRET_KEY', "None")
+
 
 """EMAIL"""
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from rest_framework import serializers
 from .models import Purchase
 from course.serializers import LevelsSerializer, ScheduleSerializer, PlansSerializer
@@ -17,7 +17,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = [
             'course_level', 'schedule', 'plan_selected', 'purchase_price',
-            'kids_selected', 'order_id', 'payment_method', 'total_sessions', 'completed_sessions'
+            'kids_selected', 'order_id', 'payment_method', 'total_sessions', 'completed_sessions',
+            'booking_id'
             ]
     
     def to_representation(self, instance):
@@ -33,5 +34,6 @@ class PurchaseSerializer(serializers.ModelSerializer):
     def get_completed_sessions(self, obj):
         # Count the number of completed ScheduleTimings associated with the purchase's schedule
         now = datetime.now().time()
-        return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count()
+        # return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count() # Count today
+        return obj.schedule.timing.filter(date__lt=datetime.now().date(), end_time__lt=now).count() # Omit today
     

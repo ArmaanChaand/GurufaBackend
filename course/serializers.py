@@ -70,10 +70,27 @@ class ScheduleTimingSerializer(serializers.ModelSerializer):
 class ScheduleSerializer(serializers.ModelSerializer):
     timing = ScheduleTimingSerializer(many=True, read_only=True)
     to_course = CourseSerializer(many=False, read_only=True)
+    start_date = serializers.SerializerMethodField()
+    end_date = serializers.SerializerMethodField()
+
     class Meta:
         model = Schedule
         fields = ('id', 'schedule_name', 'start_date', 'end_date', 'seats_left', 'timing', 'to_course')
     
+    def get_start_date(self, obj):
+        # Get the earliest ScheduleTiming related to this Schedule
+        earliest_timing = obj.timing.order_by('date', 'start_time').first()
+        if earliest_timing:
+            return earliest_timing.date
+        return None
+
+    def get_end_date(self, obj):
+        # Get the latest ScheduleTiming related to this Schedule
+        latest_timing = obj.timing.order_by('-date', '-end_time').first()
+        if latest_timing:
+            return latest_timing.date
+        return None
+
     # def to_representation(self, instance):
     #     representation = super().to_representation(instance)
     #     current_date = date.today()
