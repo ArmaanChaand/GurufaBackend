@@ -11,10 +11,9 @@ import razorpay
 from .models import Purchase
 from .serializers import PurchaseSerializer
 from course.models import Levels, Plans, Schedule
+from course.serializers import PlansSerializer
 from user.models import User, Kid   
 # Create your views here.
-
-
 
 @api_view(http_method_names=['POST'])
 @permission_classes([IsAuthenticated])
@@ -75,7 +74,7 @@ def CreatePurchase(request):
                 kid.demo_courses.add(course_level.to_course)
         purchase.save()
         data = {}
-        data['free'] = True
+        data['method'] = 'Free Purchase'
         data['purchase_data'] = PurchaseSerializer(purchase).data
         return Response(data=data, status=status.HTTP_201_CREATED)
 
@@ -94,12 +93,14 @@ def CreatePurchase(request):
         try:
             razorpay_order = client.order.create(data=DATA)
             purchase.order_id = razorpay_order['id']
+            purchase.payment_method = 'Razorpay'
             purchase.save()
             response_data = {
                 'message': 'Purchase created successfully',
                 'order_created': True, 
                 'order': razorpay_order,
-                'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID 
+                'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID ,
+                'method': 'Razorpay',
 
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -108,40 +109,47 @@ def CreatePurchase(request):
     
     """CASHFREE"""
     if payment_method_chosen == 'Cashfree':
-        url = "https://sandbox.cashfree.com/pg/orders"
-
+        url = f"{settings.CASHFREE_ENDPOINT}/orders"
         payload = {
             "customer_details": {
-                "customer_id": user.email,
+                "customer_id": user.username,
+                "customer_name": user.get_full_name(),
                 "customer_email": user.email,
-                "customer_phone": user.phone_number.national_number
+                "customer_phone": str(user.phone_number.national_number)
             },
-            "order_amount": 10,
+            "order_amount": float(purchase.purchase_price),
             "order_currency": "INR",
-            "order_id": "cf" + str(user.username) + str(uuid.uuid4().hex[:8])
+            "order_id": new_booking_id.upper()
         }
         headers = {
             "accept": "application/json",
             "x-client-id": settings.CASHFREE_APP_ID,
             "x-client-secret": settings.CASHFREE_SECRET_KEY,
-            "content-type": "application/json"
+            "content-type": "application/json",
+            "x-api-version": "2023-08-01",
         }
         try:
             response = requests.post(url, json=payload, headers=headers)
-            print(response)
-            print(response.text)
-        except requests.exceptions.RequestException as e:
+            res_data = json.loads(response.text)
+            print(res_data)
+            purchase.payment_method = 'Cashfree'
+            purchase.order_id = res_data['cf_order_id']
+            purchase.payment_id = 'TBD'
+            purchase.order_signature = '---'
+            schedule.save()
+            purchase.save()
+
+            response_data = {
+                    'message': 'Purchase created successfully',
+                    'order_created': True, 
+                    'order': res_data,
+                    'method': 'Cashfree',
+                }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        except Exception as e:
             print(e)
-
-
-        response_data = {
-                'message': 'Purchase created successfully',
-                'order_created': True, 
-                'order': "cashfree_purchase",
-                'CASHFREE_APP_ID': settings.CASHFREE_APP_ID,
-                'cf_response': json.loads(response.text)
-            }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response({'error': 'Some error ocurred.'}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 
 @api_view(http_method_names=['POST'])
@@ -158,7 +166,6 @@ def successPurchaseRazorpay(request):
         purchase.order_signature = razorpay_signature
         if purchase.order_id == razorpay_order_id:
             purchase.payment_status = 'PAID'
-            purchase.payment_method = 'Razorpay'
             purchase.schedule.seats_occupied = int(purchase.schedule.seats_occupied) + purchase.kids_selected.count()
             purchase.schedule.save()
             purchase.save()
@@ -189,6 +196,58 @@ def failedPurchaseRazorpay(request):
             return Response({"updated": True}, status=status.HTTP_200_OK)
         else :
             return Response({"updated": False, "message": "Order ID didn't matched"}, status=status.HTTP_400_BAD_REQUEST)
+
+    except Purchase.DoesNotExist:
+        return Response({'error': 'Purchase Does Not Exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticated])
+def getOrderCashfree(request):
+    cf_order_id = request.data.get('cf_order_id')
+
+    try:
+        purchase = Purchase.objects.get(booking_id=cf_order_id, user=request.user,  payment_method='Cashfree')
+        url = f"{settings.CASHFREE_ENDPOINT}/orders/{cf_order_id}/payments"
+        print(url)
+        headers = {
+            "accept": "application/json",
+            "x-client-id": settings.CASHFREE_APP_ID,
+            "x-client-secret": settings.CASHFREE_SECRET_KEY,
+            "x-api-version": "2023-08-01",
+        }
+        response = requests.get(url=url, headers=headers)
+        res_data = json.loads(response.text)[0]
+        if(res_data['payment_status'] == "SUCCESS"):
+            purchase.payment_status = 'PAID'
+            purchase.payment_id = res_data['cf_payment_id']
+            purchase.schedule.seats_occupied = int(purchase.schedule.seats_occupied) + purchase.kids_selected.count()
+            purchase.schedule.save()
+            purchase.save()
+            response_data = {
+                'payment_status': "SUCCESS",
+                'purchase_data': PurchaseSerializer(purchase).data,
+                'plan_selected': PlansSerializer(purchase.plan_selected).data,
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            purchase.payment_status = 'FAILED'
+            purchase.payment_id = res_data['cf_payment_id']
+            purchase.save()
+            response_data = {
+                'payment_status': "FAILED",
+                'order_status': res_data,
+                'order_detail': {
+                    'payment_method' : purchase.payment_method,
+                    'payment_id': res_data['cf_payment_id'],
+                    'order_id': purchase.booking_id,
+                    'error_description': res_data['error_details']['error_description'],
+                }
+                
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
 
     except Purchase.DoesNotExist:
         return Response({'error': 'Purchase Does Not Exists'}, status=status.HTTP_400_BAD_REQUEST)

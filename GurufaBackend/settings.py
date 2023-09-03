@@ -245,6 +245,7 @@ RAZORPAY_KEY_ID     = os.getenv('RAZORPAY_KEY_ID', "None")
 RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', "None")
 
 """CASHFREE CREDENTIALS"""
+CASHFREE_ENDPOINT     = os.getenv('CASHFREE_ENDPOINT', "https://sandbox.cashfree.com/pg")
 CASHFREE_APP_ID     = os.getenv('CASHFREE_APP_ID', "None")
 CASHFREE_SECRET_KEY = os.getenv('CASHFREE_SECRET_KEY', "None")
 
