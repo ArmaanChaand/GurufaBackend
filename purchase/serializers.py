@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from rest_framework import serializers
-from .models import Purchase
+from .models import Purchase, PurchaseSession
 from course.serializers import LevelsSerializer, ScheduleSerializer, PlansSerializer
 from user.serializers import kidInfoSerializer
 
@@ -36,4 +36,9 @@ class PurchaseSerializer(serializers.ModelSerializer):
         now = datetime.now().time()
         # return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count() # Count today
         return obj.schedule.timing.filter(date__lt=datetime.now().date(), end_time__lt=now).count() # Omit today
+    
+class PurchaseSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PurchaseSession
+        fields = '__all__'
     

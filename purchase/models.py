@@ -19,12 +19,12 @@ class Purchase(models.Model):
         ('FAILED', 'Failed'),
     )
     payment_status  = models.CharField(_("Payment Status"),max_length=10, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
-    PAYMENT_METHOD_CHOICES = (
+    SESSION_STATUS_CHOICES = (
         ('Free Purchase', 'Free Purchase'),
         ('Razorpay', 'Razorpay'),
         ('Cashfree', 'Cashfree'),
     )
-    payment_method  = models.CharField(_("Payment Method"),max_length=50, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True)
+    payment_method  = models.CharField(_("Payment Method"),max_length=50, choices=SESSION_STATUS_CHOICES, null=True, blank=True)
     order_id        = models.CharField(_("Order ID"), max_length=200, null=True, blank=True)   
     payment_id      = models.CharField(_("Payment ID"), max_length=200, null=True, blank=True)   
     booking_id      = models.CharField(_("Booking ID"), max_length=120)
@@ -37,5 +37,25 @@ class Purchase(models.Model):
         verbose_name = 'Purchase'
         verbose_name_plural = 'Purchases'
 
+    def __str__(self) -> str:
+        return f"{self.id} | {self.user}"
+
+
+class PurchaseSession(models.Model):
+    identifier       = models.CharField(max_length=100, unique=True)
+    user             = models.ForeignKey(to=User, on_delete=models.CASCADE)                        
+    course_selected  = models.ForeignKey(to=Course, on_delete=models.CASCADE)
+    plan_selected    = models.ForeignKey(to=Plans, on_delete=models.CASCADE)
+    level_selected   = models.ForeignKey(to=Levels, on_delete=models.CASCADE)
+    SESSION_STATUS_CHOICES = (
+        ('ONGOING', 'ONGOING'),
+        ('PURCHASED', 'PURCHASED'),
+    )
+    session_status   = models.CharField(max_length=20, choices=SESSION_STATUS_CHOICES, null=True, blank=True, default="ONGOING")
+
+    class Meta:
+        verbose_name = 'Purchase Session'
+        verbose_name_plural = 'Purchase Sessions'
+    
     def __str__(self) -> str:
         return f"{self.id} | {self.user}"

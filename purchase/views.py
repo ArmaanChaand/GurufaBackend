@@ -8,9 +8,9 @@ from rest_framework import status
 from django.conf import settings
 from django.db import transaction
 import razorpay
-from .models import Purchase
-from .serializers import PurchaseSerializer
-from course.models import Levels, Plans, Schedule
+from .models import Purchase, PurchaseSession
+from .serializers import PurchaseSerializer, PurchaseSessionSerializer
+from course.models import Levels, Plans, Schedule, Course
 from course.serializers import PlansSerializer
 from user.models import User, Kid   
 # Create your views here.
@@ -251,5 +251,73 @@ def getOrderCashfree(request):
 
     except Purchase.DoesNotExist:
         return Response({'error': 'Purchase Does Not Exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(http_method_names=['POST'])
+@permission_classes([IsAuthenticated])
+def CreatePurchaseSession(request):
+    plan_selected = request.data.get('plan_selected')
+    level_selected = request.data.get('level_selected')
+    course_selected = request.data.get('course_selected')
+
+    try:
+        user = request.user
+    except User.DoesNotExist:
+        return Response({'error': 'Invalid user ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        level = Levels.objects.get(id=level_selected)
+    except Levels.DoesNotExist:
+        return Response({'error': 'Invalid course level ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        course = Course.objects.get(slug=course_selected)
+    except Schedule.DoesNotExist:
+        return Response({'error': 'Invalid schedule ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        plan = Plans.objects.get(id=plan_selected)
+    except Plans.DoesNotExist:
+        return Response({'error': 'Invalid plan selected ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        query_purchase_session = PurchaseSession.objects.filter(
+            user=user,
+            course_selected=course,
+            plan_selected=plan,
+            level_selected=level,
+        )
+        if query_purchase_session.exists():
+            query_purchase_session_serializer = PurchaseSessionSerializer(query_purchase_session.first())
+            return Response({'purchase_session': query_purchase_session_serializer.data}, status=status.HTTP_200_OK)
+        else:
+            identifier = course.slug[:4] + plan.name[:1] + level.name[:1]  + str(uuid.uuid4().hex[:7])  
+            purchase_session = PurchaseSession.objects.create(
+                user=user,
+                course_selected=course,
+                plan_selected=plan,
+                level_selected=level,
+                identifier=identifier.upper()
+            )   
+            purchase_session_serializer = PurchaseSessionSerializer(purchase_session)
+            return Response({'purchase_session': purchase_session_serializer.data}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': 'Some error ocurred.'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(http_method_names=['GET'])
+@permission_classes([IsAuthenticated])
+def getPurchaseSession(request, identifier):
+    print(identifier)
+    try:
+        purchase_session = PurchaseSession.objects.get(
+            user=request.user,
+            identifier=identifier
+        )   
+        purchase_session_serializer = PurchaseSessionSerializer(purchase_session)
+        return Response({'purchase_session': purchase_session_serializer.data}, status=status.HTTP_200_OK)
+    except PurchaseSession.DoesNotExist:
+        return Response({'error': 'Some error ocurred.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 

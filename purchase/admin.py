@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import Purchase
+from .models import Purchase, PurchaseSession
 from user.models import Kid
 from django.core.exceptions import ValidationError
 # Register your models here.
@@ -31,3 +31,10 @@ class PurchaseAdmin(admin.ModelAdmin):
     form = PurchaseAdminForm
 
 admin.site.register(Purchase, PurchaseAdmin )
+
+class PurchaseSessionModelAdmin(admin.ModelAdmin):
+    list_display = ['identifier', 'user', 'session_status'] 
+    # search_fields = []  
+    list_filter = ['session_status'] 
+
+admin.site.register(PurchaseSession, PurchaseSessionModelAdmin)
