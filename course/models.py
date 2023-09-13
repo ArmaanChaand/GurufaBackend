@@ -15,20 +15,21 @@ def validate_course_icon_size(value):
         raise ValidationError(_("The file size must be less than 200KB."))  
 
 def validate_course_banner_size(value):
-    """Maximum allowed file size in bytes (200KB)"""
-    max_size = 800 * 1024
+    """Maximum allowed file size in bytes (5MB)"""
+    max_size = 5 * 1024 * 1024
 
     if value.size > max_size:
-        raise ValidationError(_("The file size must be less than 800KB."))  
+        raise ValidationError(_("The file size must be less than 5MB."))  
 
 class Course(models.Model):
     is_active = models.BooleanField(default=True, null=False, blank=False)
-    name          = models.CharField(_("Course Name"), max_length=200, null=False, blank=False)
-    slug          = models.SlugField(_("Slug"), max_length=200, unique=True, editable=False)
+    name          = models.CharField(_("Course Name"), max_length=50, null=False, blank=False)
+    title         = models.CharField(_("Course Title"), max_length=150, null=True, blank=True)
+    slug          = models.SlugField(_("Slug"), max_length=200, unique=True, editable=True)
     overview      = models.TextField(_("Course Overview"), null=True, blank=True)
-    about_guru    = models.TextField(_("About Guru"), null=True, blank=True)
     course_icon   = models.ImageField(upload_to='images/courses/', validators=[validate_course_icon_size])
-    course_banner = models.ImageField(upload_to='images/courses/', validators=[validate_course_banner_size])
+    course_banner = models.ImageField(upload_to='images/courses/', validators=[validate_course_banner_size], null=True, blank=True)
+    course_banner_url = models.URLField(_("Course Banner URL"), null=True, blank=True)
 
     history       = HistoricalRecords()
 
@@ -38,15 +39,63 @@ class Course(models.Model):
     
     def __str__(self) -> str:
         return self.name
+    
+    def clean(self):
+        # Validate that either 'course_banner' or 'course_banner_url' is provided, but not both.
+        if self.course_banner and self.course_banner_url:
+            raise ValidationError(_("You can only provide either a course banner image or a course banner URL, not both."))
+        if not self.course_banner and not self.course_banner_url:
+            raise ValidationError(_("You need to provide either a course banner image or a course banner URL."))
+         # Check if the slug is unique.
+        courses = Course.objects.exclude(id=self.id)
+        for course in courses:
+            if course.slug == self.slug:
+                raise ValidationError(_("The slug must be unique."))
+
+    
 
     def save(self, *args, **kwargs):
+        # If a 'course_banner_url' is provided, set 'course_banner' to None to avoid conflicts.
+        if self.course_banner_url:
+            self.course_banner = None
         if not self.slug or self.pk is None:
             self.slug = slugify(self.name) + str(uuid.uuid4().hex[:8])
         super().save(*args, **kwargs)
     
     def get_max_capacity(self):
-        max_total_num_of_seats = self.course_schedules.aggregate(max_total_num_of_seats=models.Max('total_num_of_seats'))
+        schedules = self.course_schedules.filter(is_active=True)
+        max_total_num_of_seats = schedules.aggregate(max_total_num_of_seats=models.Max('total_num_of_seats'))
         return max_total_num_of_seats['max_total_num_of_seats'] or 5
+    
+
+    def get_min_num_classes(self):
+        schedules = self.course_schedules.filter(is_active=True)
+        min_num_classes = schedules.aggregate(min_num_classes=models.Min('num_classes'))['min_num_classes']
+        return min_num_classes or 0
+
+    def get_min_frequency(self):
+        schedules = self.course_schedules.filter(is_active=True)
+        min_frequency = schedules.aggregate(min_frequency=models.Min('frequency'))['min_frequency']
+        return min_frequency or 0
+
+    def get_min_duration(self):
+        schedules = self.course_schedules.filter(is_active=True)
+        min_duration = schedules.aggregate(min_duration=models.Min('duration'))['min_duration']
+        return min_duration or 0
+
+    def get_starting_price(self):
+        # Get all the plans linked with the course
+        plans = self.my_plans.filter(is_active=True)
+
+        # Check if there are any plans
+        if plans:
+            # Find the minimum discounted price among the plans
+            min_discounted_price = min(plan.price for plan in plans)
+            return min_discounted_price
+        else:
+            # Return a default value if there are no plans
+            return 0  # You can change this default value as needed
+        
     
 
 class Levels(models.Model):
@@ -54,10 +103,8 @@ class Levels(models.Model):
     to_course   = models.ForeignKey(to=Course, on_delete=models.CASCADE, null=False, blank=False, related_name='my_levels')
     name        = models.CharField(_("Level Name"), max_length=100, null=False, blank=False)
     description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
-    num_classes = models.IntegerField(_("Number Of Classes"), null=True, blank=True)
-    frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
-    duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
-    starts_from = models.DecimalField(_("Starts From"), max_digits=10, decimal_places=2)
+    increment   = models.DecimalField(verbose_name=_("Increase price by: "), decimal_places=2, max_digits=5,default=0, null=True, blank=True)
+    decrement   = models.DecimalField(verbose_name=_("Decrease price by: "), decimal_places=2, max_digits=5, default=0, null=True, blank=True)
 
     history     = HistoricalRecords()
 
@@ -72,14 +119,16 @@ class Plans(models.Model):
     PLAN_NAMES_CHOICES = (
         ('One-on-One', 'One-on-One'),
         ('Batch', 'Batch'),
+        ('Group Sessions', 'Group Sessions'),
         ('Siblings', 'Siblings'),
         ('Demo Class', 'Demo Class'),
     )
     name               = models.CharField(_("Plan Name"), max_length=100, null=False, blank=False, choices=PLAN_NAMES_CHOICES)
+    course             = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True, related_name='my_plans')
     slug               = models.SlugField(_("Slug"), max_length=200, unique=True, editable=False)
     description        = models.CharField(_("Plan Description"), max_length=100, null=True, blank=True)
     price              = models.DecimalField(_("Price"), max_digits=10, decimal_places=2,)
-    discount_percent   = models.DecimalField(verbose_name=_("Discont per cent"),max_digits=5, decimal_places=2)
+    discount_percent   = models.DecimalField(verbose_name=_("Discont per cent"),max_digits=5, decimal_places=2, null=True, blank=True,default=0)
     is_active          = models.BooleanField(default=True, null=False, blank=False)
 
     history            = HistoricalRecords()
@@ -95,29 +144,31 @@ class Plans(models.Model):
         verbose_name_plural = 'Course Plans'
     
     def __str__(self) -> str:
-        return f"{ self.name }" 
+        return f"{ self.name } | { self.course }" 
     
     def clean(self):
         discounted_price = self.discounted_price
-        if discounted_price < 1:
+        if discounted_price < 1 and self.name != 'Demo Class':
             raise ValidationError("Discounted price cannot be less than 1. Modify Price and/or Discount per cent.")
 
     def save(self, *args, **kwargs):
         if not self.slug or self.pk is None:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name) + str(uuid.uuid4().hex[:8])
         super().save(*args, **kwargs)
 
 class Schedule(models.Model):
     is_active           = models.BooleanField(default=True, null=False, blank=False)
     to_course           = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course"), related_name='course_schedules')
     plan                = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan"))
-    guru                = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"),
+    guru                = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"), related_name='plan_associated'
                                            )
     schedule_name       = models.CharField(_("Schedule Name"), max_length=100)
-    # start_date          = models.DateField(_("Start Date"))
-    # end_date            = models.DateField(_("End Date"))
     total_num_of_seats  = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
     seats_occupied      = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
+
+    num_classes = models.IntegerField(_("Number Of Classes"), null=True, blank=True)
+    frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
+    duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
 
     history             = HistoricalRecords()
 

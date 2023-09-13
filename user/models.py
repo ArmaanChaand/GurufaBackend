@@ -38,7 +38,7 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **kwargs)
         user.set_password(password)
-        user.save()
+        user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
@@ -88,6 +88,7 @@ class User(AbstractUser, PermissionsMixin):
         if not self.username:
             random_string = str(uuid.uuid4().hex[:8])
             self.username = f"{self.first_name.lower()}{self.last_name.lower()}{random_string}"
+
         super().save(*args, **kwargs)
 
 class OTP(models.Model):

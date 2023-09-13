@@ -17,6 +17,7 @@ class userInfoSerializer(serializers.ModelSerializer):
             'picture', 'auth_provider_img',
             'auth_providers','is_a_guru','user_roles',  
             'is_active',
+            'password'
             ]
         # fields = '__all__'    
     
@@ -54,7 +55,7 @@ class KidsPurchaseLevelsSerializer(serializers.ModelSerializer):
     to_course = CourseSerializerSmall(many=False, read_only=True)
     class Meta:
         model = Levels
-        fields = ['id', 'name', 'description', 'num_classes', 'frequency', 'duration', 'starts_from', 'to_course']
+        fields = ['id', 'name', 'description', 'to_course']
 
 
 class KidsPurchaseSerializer(serializers.ModelSerializer):
@@ -91,7 +92,7 @@ class kidInfoSerializer(serializers.ModelSerializer):
         fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases', 'kid_gender', 'demo_courses']
     
     def validate_kid_profile(self, value):
-        if value and value.size > 500 * 1024:  
-            raise serializers.ValidationError("Image size should be less than 500KB.")
+        if value and value.size > 2 * 1024 * 1024:  
+            raise serializers.ValidationError("Image size should be less than 2MB.")
         return value
     

@@ -4,20 +4,20 @@ from .models import FAQs, Review
 # Register your models here.
 
 class FAQModelAdmin(admin.ModelAdmin):
-    list_display = ['question', 'faq_for']  # Specify the fields to display in the list view
+    list_display = ['question', 'to_course', 'faq_for']  # Specify the fields to display in the list view
     search_fields = ['question', 'answer']  # Enable searching by specified fields
-    list_filter = ['question', 'faq_for', 'is_active']  # Enable filtering by specified fields
+    list_filter = ['question', 'to_course', 'is_active', 'faq_for']  # Enable filtering by specified fields
 
 admin.site.register(FAQs, FAQModelAdmin)
 
 
 class ReviewModelAdmin(admin.ModelAdmin):
-    list_display = ['rating', 'to_course', 'review_by']  # Specify the fields to display in the list view
-    list_filter = ['rating', 'to_course', 'is_active']  # Enable filtering by specified fields
+    list_display = ['rating', 'to_course', 'review_by', 'review_for']  # Specify the fields to display in the list view
+    list_filter = ['rating', 'to_course', 'is_active', 'review_for']  # Enable filtering by specified fields
 
     fieldsets = [
         ('Rating & Content', {'fields': ['rating', 'content']}),
-        ('More', {'fields': ['review_by', 'to_course']}),
+        ('More', {'fields': ['review_by', 'to_course', 'created_at']}),
         ('Activity Status', {'fields': ['is_active']}),
     ]
 

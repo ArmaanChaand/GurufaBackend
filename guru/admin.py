@@ -8,7 +8,7 @@ class GuruModelAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('User associated with', {'fields': ['user_id']}),
-        ('More Info', {'fields': ['experience']}),
+        ('More Info', {'fields': ['experience', 'guru_description']}),
         ('Activity Status', {'fields': ['is_active']}),
     ]
     def get_phone_number(self, obj):

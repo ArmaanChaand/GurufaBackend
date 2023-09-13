@@ -1,5 +1,5 @@
 from rest_framework import serializers, fields
-from .models import BecomeAGuru, SKILLS_CHOICES
+from .models import BecomeAGuru, SKILLS_CHOICES, Guru
 
 def validate_skills(value):
     if not value:
@@ -12,15 +12,13 @@ class BecomeAGuruSerializer(serializers.ModelSerializer):
         model = BecomeAGuru
         fields = '__all__'
 
+class GuruSerializerForSchedule(serializers.ModelSerializer):
+    # Define fields from the linked User model
+    first_name = serializers.CharField(source='user_id.first_name', read_only=True)
+    last_name = serializers.CharField(source='user_id.last_name', read_only=True)
+    picture = serializers.CharField(source='user_id.picture', read_only=True)
+    auth_provider_img = serializers.CharField(source='user_id.auth_provider_img', read_only=True)
 
-"""
-{
-  "full_name": "John Doe",
-  "email": "john.doe@example.com",
-  "phone_number": "8210485920",
-  "yrs_experience": "5.5",
-  "skills": ["Chess", "Other"],
-  "other_skills": "Some other skill"
-}
-
-"""
+    class Meta:
+        model = Guru
+        fields = ['id', 'is_active', 'guru_description', 'experience', 'first_name', 'last_name', 'picture', 'auth_provider_img']

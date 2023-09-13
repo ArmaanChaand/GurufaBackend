@@ -5,19 +5,28 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import FAQs, Review
 from .serializers import FAQsSerializer,ReviewSerializer
+from datetime import datetime
 # Create your views here.
 
 @api_view(http_method_names=['GET'])
 def getAllFaqs(request):
-    faqs = FAQs.objects.all()
+    faq_for = request.query_params.get('faq_for')
+    if faq_for:
+        faqs = FAQs.objects.filter(is_active=True, faq_for=faq_for)
+    else:
+        faqs = FAQs.objects.filter(is_active=True)
     faqs_data = FAQsSerializer(faqs, many=True).data
     return Response(faqs_data)
 
 @api_view(http_method_names=['GET'])
 def getAllReviews(request):
-    reviews = Review.objects.all()
-    reviews = ReviewSerializer(reviews, many=True).data
-    return Response(reviews, status=status.HTTP_200_OK)
+    review_for = request.query_params.get('review_for')
+    if review_for:
+        reviews = Review.objects.filter(is_active=True, review_for=review_for)
+    else:
+        reviews = Review.objects.filter(is_active=True)
+    reviews_serializer_data = ReviewSerializer(reviews, many=True).data
+    return Response(reviews_serializer_data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def getCourseReviews(request, course_id):
@@ -56,6 +65,7 @@ def createReview(request):
     if serializer.is_valid():
         new_review = serializer.save()
         new_review.review_by = user
+        new_review.created_at = datetime.now()
         new_review.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

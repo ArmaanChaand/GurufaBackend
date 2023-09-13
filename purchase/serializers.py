@@ -34,8 +34,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
     def get_completed_sessions(self, obj):
         # Count the number of completed ScheduleTimings associated with the purchase's schedule
         now = datetime.now().time()
-        # return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count() # Count today
-        return obj.schedule.timing.filter(date__lt=datetime.now().date(), end_time__lt=now).count() # Omit today
+        return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count() # Count today
+        # return obj.schedule.timing.filter(date__lt=datetime.now().date(), end_time__lt=now).count() # Omit today
     
 class PurchaseSessionSerializer(serializers.ModelSerializer):
     class Meta:

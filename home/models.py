@@ -6,12 +6,17 @@ from user.models import User
 from simple_history.models import HistoricalRecords
 # Create your models here.
 class FAQs(models.Model):
+    FAQ_FOR_CHOICES = (
+        ('GURUFA', 'GURUFA'),
+        ('COURSE', 'COURSE'),
+    )
+    faq_for = models.CharField(_("FAQ is for?"), max_length=100, null=True, blank=True, choices=FAQ_FOR_CHOICES)
     is_active  = models.BooleanField(default=True, null=False, blank=False)
     question   = models.CharField(_("Question"), max_length=200, blank=False, null=False)
     answer     = models.TextField(_("Answer"), blank=False, null=False)
-    faq_for    = models.ForeignKey(to=Course, 
+    to_course    = models.ForeignKey(to=Course, 
                                 blank=True,null=True, 
-                                on_delete=models.SET_NULL, verbose_name=_("FAQ For"),
+                                on_delete=models.SET_NULL, verbose_name=_("Course"),
                                 related_name="course_faqs",
                                 )
     
@@ -22,20 +27,33 @@ class FAQs(models.Model):
         verbose_name_plural = 'FAQs'
 
     def __str__(self) -> str:
-        course_selected = self.faq_for or "GENERAL"
-        return f"{self.question[:100]}... | [{course_selected}]"
+        course_selected = self.to_course or "GURUFA"
+        return f"{self.question[:20]}... | [{course_selected}]"
+    
+    def save(self, *args, **kwargs):
+        """Update faq_for accordingly"""
+        if self.to_course:
+            self.faq_for = 'COURSE'
+        else:
+            self.faq_for = 'GURUFA'
+        super(FAQs, self).save(*args, **kwargs)
 
 def validate_rating(value):
     if value > 5:
         raise ValidationError(_("Pick between 1 and 5"))
 
 class Review(models.Model):
+    REVIEW_FOR_CHOICES = (
+        ('GURUFA', 'GURUFA'),
+        ('COURSE', 'COURSE'),
+    )
+    review_for = models.CharField(_("Review is for?"), max_length=100, null=True, blank=True, choices=REVIEW_FOR_CHOICES)
     is_active  = models.BooleanField(default=True, null=False, blank=False)
     review_by  = models.ForeignKey(to=User, verbose_name=_("Review given by"), on_delete=models.SET_NULL, null=True, blank=True, related_name='my_reviews')
     to_course  = models.ForeignKey(to=Course, verbose_name=_("Course"), on_delete=models.SET_NULL, null=True, blank=True, related_name='course_reviews')
     rating     = models.DecimalField(max_digits=1, decimal_places=0, null=False, blank=False, default=1, validators=[validate_rating], help_text=_("Pick between 1 to 5"))
-    content    = models.TextField(verbose_name=_("Content"), max_length=150, null=False, blank=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    content    = models.TextField(verbose_name=_("Content"), max_length=250, null=False, blank=False)
+    created_at = models.DateTimeField()
 
     history    = HistoricalRecords()
 
@@ -53,6 +71,16 @@ class Review(models.Model):
             existing_reviews = existing_reviews.exclude(pk=self.pk)  # Exclude current instance if editing
         if existing_reviews.exists():
             raise ValidationError(_("You have already reviewed this course."))
+    
+    
+    def save(self, *args, **kwargs):
+        """Update review_for accordingly"""
+        if self.to_course:
+            self.review_for = 'COURSE'
+        else:
+            self.review_for = 'GURUFA'
+        super(Review, self).save(*args, **kwargs)
+    
 
     def __str__(self) -> str:
         return f"{self.content[:30]}...]"

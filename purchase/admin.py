@@ -33,8 +33,8 @@ class PurchaseAdmin(admin.ModelAdmin):
 admin.site.register(Purchase, PurchaseAdmin )
 
 class PurchaseSessionModelAdmin(admin.ModelAdmin):
-    list_display = ['identifier', 'user', 'session_status'] 
+    list_display = ['identifier', 'user', 'session_status', 'plan_selected', 'level_selected'] 
     # search_fields = []  
-    list_filter = ['session_status'] 
+    list_filter = ['session_status', 'plan_selected', 'course_selected'] 
 
 admin.site.register(PurchaseSession, PurchaseSessionModelAdmin)

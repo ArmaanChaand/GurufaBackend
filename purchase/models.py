@@ -48,10 +48,10 @@ class PurchaseSession(models.Model):
     plan_selected    = models.ForeignKey(to=Plans, on_delete=models.CASCADE)
     level_selected   = models.ForeignKey(to=Levels, on_delete=models.CASCADE)
     SESSION_STATUS_CHOICES = (
-        ('ONGOING', 'ONGOING'),
-        ('PURCHASED', 'PURCHASED'),
+        ('INCOMPLETE', 'INCOMPLETE'),
+        ('COMPLETED', 'COMPLETED'),
     )
-    session_status   = models.CharField(max_length=20, choices=SESSION_STATUS_CHOICES, null=True, blank=True, default="ONGOING")
+    session_status   = models.CharField(max_length=20, choices=SESSION_STATUS_CHOICES, null=True, blank=True, default="INCOMPLETE", help_text="'COMPLETED' refers that user made purchase with this session. Purchase may be failed or succeeded.")
 
     class Meta:
         verbose_name = 'Purchase Session'

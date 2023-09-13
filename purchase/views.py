@@ -48,7 +48,6 @@ def CreatePurchase(request):
     kids_selected = user.my_kids.filter(id__in=kids_selected_ids)
 
     new_booking_id = course_level.to_course.slug[:3] + str(uuid.uuid4().hex[:7])
-
     purchase = Purchase.objects.create(
         user=user,
         course_level=course_level,
@@ -58,6 +57,13 @@ def CreatePurchase(request):
         booking_id= new_booking_id.upper()
     )
     purchase.kids_selected.set(kids_selected)
+    purchase_sessions = PurchaseSession.objects.filter(
+            user=user,
+            course_selected=course_level.to_course,
+            plan_selected=plan_selected,
+            level_selected=course_level,
+            session_status = 'INCOMPLETE'
+    )
 
     """DEMO PLAN SELECTED"""
     if purchase_price == 0 or purchase_price < 1:
@@ -72,7 +78,12 @@ def CreatePurchase(request):
         with transaction.atomic():
             for kid in kids_selected:
                 kid.demo_courses.add(course_level.to_course)
+        
+        for purchase_session in purchase_sessions:
+            purchase_session.session_status = 'COMPLETED'
+            purchase_session.save()
         purchase.save()
+
         data = {}
         data['method'] = 'Free Purchase'
         data['purchase_data'] = PurchaseSerializer(purchase).data
@@ -94,6 +105,9 @@ def CreatePurchase(request):
             razorpay_order = client.order.create(data=DATA)
             purchase.order_id = razorpay_order['id']
             purchase.payment_method = 'Razorpay'
+            for purchase_session in purchase_sessions:
+                purchase_session.session_status = 'COMPLETED'
+                purchase_session.save()
             purchase.save()
             response_data = {
                 'message': 'Purchase created successfully',
@@ -137,6 +151,9 @@ def CreatePurchase(request):
             purchase.payment_id = 'TBD'
             purchase.order_signature = '---'
             schedule.save()
+            for purchase_session in purchase_sessions:
+                purchase_session.session_status = 'COMPLETED'
+                purchase_session.save()
             purchase.save()
 
             response_data = {
@@ -287,12 +304,13 @@ def CreatePurchaseSession(request):
             course_selected=course,
             plan_selected=plan,
             level_selected=level,
+            session_status='INCOMPLETE'
         )
         if query_purchase_session.exists():
-            query_purchase_session_serializer = PurchaseSessionSerializer(query_purchase_session.first())
+            query_purchase_session_serializer = PurchaseSessionSerializer(query_purchase_session.last())
             return Response({'purchase_session': query_purchase_session_serializer.data}, status=status.HTTP_200_OK)
         else:
-            identifier = course.slug[:4] + plan.name[:1] + level.name[:1]  + str(uuid.uuid4().hex[:7])  
+            identifier = str(uuid.uuid4().hex[:16])  
             purchase_session = PurchaseSession.objects.create(
                 user=user,
                 course_selected=course,
@@ -308,11 +326,11 @@ def CreatePurchaseSession(request):
 @api_view(http_method_names=['GET'])
 @permission_classes([IsAuthenticated])
 def getPurchaseSession(request, identifier):
-    print(identifier)
     try:
         purchase_session = PurchaseSession.objects.get(
             user=request.user,
-            identifier=identifier
+            identifier=identifier,
+            session_status='INCOMPLETE'
         )   
         purchase_session_serializer = PurchaseSessionSerializer(purchase_session)
         return Response({'purchase_session': purchase_session_serializer.data}, status=status.HTTP_200_OK)
