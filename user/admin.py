@@ -15,37 +15,10 @@ class KidModelInline(admin.TabularInline):
     model = Kid
     extra = 0
 
-class CustomUserChangeForm(UserChangeForm):
-    class Meta:
-        model = User
-        fields = '__all__'  # Include all fields, including 'password'
-
-    password = forms.CharField(
-        label="Password",
-        strip=False,
-        widget=forms.PasswordInput,
-        required=False,  # Set as optional to avoid password validation on saving
-    )
-class CustomUserCreationForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = '__all__'  # Include all fields, including 'password'
-
-    password1 = forms.CharField(
-        label="Password",
-        strip=False,
-        widget=forms.PasswordInput,
-    )
-
-    password2 = forms.CharField(
-        label="Password confirmation",
-        widget=forms.PasswordInput,
-        strip=False,
-    )
 
 
-# class UserModelAdmin(admin.ModelAdmin):
 class UserModelAdmin(UserAdmin):
+# class UserModelAdmin(admin.ModelAdmin):
     list_display = ['email', 'first_name', 'last_name', 'phone_number', 'user_roles']  # Specify the fields to display in the list view
     search_fields = ['email', 'phone_number', 'first_name', 'last_name']  # Enable searching by specified fields
     list_filter = ['auth_providers', 'is_a_guru','is_email_verified', 'is_phone_verified', 'date_joined', 'last_login']  # Enable filtering by specified fields
@@ -63,14 +36,6 @@ class UserModelAdmin(UserAdmin):
     
     inlines = [KidModelInline, GuruModelInline]
 
-    form = CustomUserChangeForm
-    add_form = CustomUserCreationForm
-
-    def save_model(self, request, obj, form, change):
-        # Manually hash the password if it has been changed
-        if 'password' in form.changed_data:
-            obj.set_password(form.cleaned_data['password'])
-        super().save_model(request, obj, form, change)
 
 
 admin.site.register(User, UserModelAdmin)
@@ -80,7 +45,7 @@ admin.site.register(User, UserModelAdmin)
 class KidModelAdmin(admin.ModelAdmin):
     list_display = ['kid_first_name', 'kid_age', 'kid_parent'] 
     search_fields = ['kid_first_name', 'kid_last_name', 'kid_age']  
-    list_filter = ['kid_age', 'kid_parent', 'is_active']  # Enable filtering by specified fields
+    list_filter = ['kid_age','is_active']  # Enable filtering by specified fields
 
     fieldsets = [
         ('Name', {'fields': ['kid_first_name', 'kid_last_name']}),

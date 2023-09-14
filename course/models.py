@@ -87,11 +87,23 @@ class Course(models.Model):
         # Get all the plans linked with the course
         plans = self.my_plans.filter(is_active=True)
 
+        # Initialize a list to store non-zero prices
+        non_zero_prices = []
+
         # Check if there are any plans
         if plans:
-            # Find the minimum discounted price among the plans
-            min_discounted_price = min(plan.price for plan in plans)
-            return min_discounted_price
+            # Iterate through the plans and collect non-zero prices
+            for plan in plans:
+                if plan.price > 0:
+                    non_zero_prices.append(plan.price)
+
+            # If there are non-zero prices, find the minimum among them
+            if non_zero_prices:
+                min_non_zero_price = min(non_zero_prices)
+                return min_non_zero_price
+            else:
+                # If all prices are zero, return zero or any other default value as needed
+                return 0  # You can change this default value as needed
         else:
             # Return a default value if there are no plans
             return 0  # You can change this default value as needed
@@ -103,8 +115,8 @@ class Levels(models.Model):
     to_course   = models.ForeignKey(to=Course, on_delete=models.CASCADE, null=False, blank=False, related_name='my_levels')
     name        = models.CharField(_("Level Name"), max_length=100, null=False, blank=False)
     description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
-    increment   = models.DecimalField(verbose_name=_("Increase price by: "), decimal_places=2, max_digits=5,default=0, null=True, blank=True)
-    decrement   = models.DecimalField(verbose_name=_("Decrease price by: "), decimal_places=2, max_digits=5, default=0, null=True, blank=True)
+    increment   = models.DecimalField(verbose_name=_("Increase price by: "), decimal_places=2, max_digits=50,default=0, null=True, blank=True)
+    decrement   = models.DecimalField(verbose_name=_("Decrease price by: "), decimal_places=2, max_digits=50, default=0, null=True, blank=True)
 
     history     = HistoricalRecords()
 
@@ -162,7 +174,7 @@ class Schedule(models.Model):
     plan                = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan"))
     guru                = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"), related_name='plan_associated'
                                            )
-    schedule_name       = models.CharField(_("Schedule Name"), max_length=100)
+    schedule_name       = models.CharField(_("Schedule Name"), max_length=100, null=True, blank=True, help_text='Leave blank to automaticallly assign a name.')
     total_num_of_seats  = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
     seats_occupied      = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
 
@@ -179,6 +191,11 @@ class Schedule(models.Model):
 
     def __str__(self) -> str:
         return f"{self.schedule_name } | ({self.to_course})"
+    
+    def save(self, *args, **kwargs):
+        if not self.schedule_name:
+            self.schedule_name = f"Schedule | {self.to_course.name} | {self.plan.name}" 
+        super().save(*args, **kwargs)
 
     @property
     def seats_left(self):

@@ -64,6 +64,9 @@ def CreatePurchase(request):
             level_selected=course_level,
             session_status = 'INCOMPLETE'
     )
+    for purchase_session in purchase_sessions:
+            purchase_session.session_status = 'COMPLETED'
+            purchase_session.save()
 
     """DEMO PLAN SELECTED"""
     if purchase_price == 0 or purchase_price < 1:
@@ -78,10 +81,6 @@ def CreatePurchase(request):
         with transaction.atomic():
             for kid in kids_selected:
                 kid.demo_courses.add(course_level.to_course)
-        
-        for purchase_session in purchase_sessions:
-            purchase_session.session_status = 'COMPLETED'
-            purchase_session.save()
         purchase.save()
 
         data = {}
@@ -91,7 +90,7 @@ def CreatePurchase(request):
 
 
     """RAZORPAY ORDER"""
-    if payment_method_chosen == 'Razorpay':
+    if payment_method_chosen == 'Razorpay' and purchase_price > 0:
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
         DATA = {
             "amount": float(purchase.purchase_price) * 100,
@@ -105,9 +104,6 @@ def CreatePurchase(request):
             razorpay_order = client.order.create(data=DATA)
             purchase.order_id = razorpay_order['id']
             purchase.payment_method = 'Razorpay'
-            for purchase_session in purchase_sessions:
-                purchase_session.session_status = 'COMPLETED'
-                purchase_session.save()
             purchase.save()
             response_data = {
                 'message': 'Purchase created successfully',
@@ -122,7 +118,7 @@ def CreatePurchase(request):
             return Response({'error': 'Some error ocurred.'}, status=status.HTTP_400_BAD_REQUEST)
     
     """CASHFREE"""
-    if payment_method_chosen == 'Cashfree':
+    if payment_method_chosen == 'Cashfree' and purchase_price > 0:
         url = f"{settings.CASHFREE_ENDPOINT}/orders"
         payload = {
             "customer_details": {
@@ -145,17 +141,12 @@ def CreatePurchase(request):
         try:
             response = requests.post(url, json=payload, headers=headers)
             res_data = json.loads(response.text)
-            print(res_data)
             purchase.payment_method = 'Cashfree'
             purchase.order_id = res_data['cf_order_id']
             purchase.payment_id = 'TBD'
             purchase.order_signature = '---'
             schedule.save()
-            for purchase_session in purchase_sessions:
-                purchase_session.session_status = 'COMPLETED'
-                purchase_session.save()
             purchase.save()
-
             response_data = {
                     'message': 'Purchase created successfully',
                     'order_created': True, 

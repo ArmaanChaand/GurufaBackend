@@ -51,8 +51,8 @@ class LevelsModelAdmin(admin.ModelAdmin):
 admin.site.register(Levels, LevelsModelAdmin)
 
 class PlansModelAdmin(admin.ModelAdmin):
-    list_display = ['name', 'price', 'is_active']
-    list_filter = ['is_active']
+    list_display = ['name', 'price', 'course', 'is_active']
+    list_filter = ['is_active', 'name']
     fieldsets = [
         ('Plan Description', {'fields': ['name', 'description']}),
         ('Plan for course', {'fields': ['course']}),

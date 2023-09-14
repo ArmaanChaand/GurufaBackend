@@ -5,8 +5,13 @@ from .models import FAQs, Review
 
 class FAQModelAdmin(admin.ModelAdmin):
     list_display = ['question', 'to_course', 'faq_for']  # Specify the fields to display in the list view
-    search_fields = ['question', 'answer']  # Enable searching by specified fields
-    list_filter = ['question', 'to_course', 'is_active', 'faq_for']  # Enable filtering by specified fields
+    list_filter = ['to_course', 'is_active', 'faq_for']  # Enable filtering by specified fields
+
+    fieldsets = [
+        ('Content', {'fields': ['question', 'answer']}),
+        ('Course', {'fields': ['to_course']}),
+        ('Activity Status', {'fields': ['is_active']}),
+    ]
 
 admin.site.register(FAQs, FAQModelAdmin)
 

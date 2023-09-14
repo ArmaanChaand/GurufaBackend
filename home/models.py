@@ -10,7 +10,7 @@ class FAQs(models.Model):
         ('GURUFA', 'GURUFA'),
         ('COURSE', 'COURSE'),
     )
-    faq_for = models.CharField(_("FAQ is for?"), max_length=100, null=True, blank=True, choices=FAQ_FOR_CHOICES)
+    faq_for = models.CharField(_("FAQ is for?"), max_length=100, null=True, blank=True, choices=FAQ_FOR_CHOICES, help_text=_("Leave blank, if course is not chosen."))
     is_active  = models.BooleanField(default=True, null=False, blank=False)
     question   = models.CharField(_("Question"), max_length=200, blank=False, null=False)
     answer     = models.TextField(_("Answer"), blank=False, null=False)
@@ -18,6 +18,7 @@ class FAQs(models.Model):
                                 blank=True,null=True, 
                                 on_delete=models.SET_NULL, verbose_name=_("Course"),
                                 related_name="course_faqs",
+                                help_text=_("Leave blank, if FAQ is not for any Course.")
                                 )
     
     history    = HistoricalRecords()
@@ -47,13 +48,13 @@ class Review(models.Model):
         ('GURUFA', 'GURUFA'),
         ('COURSE', 'COURSE'),
     )
-    review_for = models.CharField(_("Review is for?"), max_length=100, null=True, blank=True, choices=REVIEW_FOR_CHOICES)
+    review_for = models.CharField(_("Review is for?"), max_length=100, null=True, blank=True, choices=REVIEW_FOR_CHOICES, help_text=_("Leave blank, if course is not chosen."))
     is_active  = models.BooleanField(default=True, null=False, blank=False)
     review_by  = models.ForeignKey(to=User, verbose_name=_("Review given by"), on_delete=models.SET_NULL, null=True, blank=True, related_name='my_reviews')
-    to_course  = models.ForeignKey(to=Course, verbose_name=_("Course"), on_delete=models.SET_NULL, null=True, blank=True, related_name='course_reviews')
-    rating     = models.DecimalField(max_digits=1, decimal_places=0, null=False, blank=False, default=1, validators=[validate_rating], help_text=_("Pick between 1 to 5"))
+    to_course  = models.ForeignKey(to=Course, verbose_name=_("Course"), on_delete=models.SET_NULL, null=True, blank=True, related_name='course_reviews', help_text=_("Leave blank, if Review is not for any Course."))
+    rating     = models.DecimalField(max_digits=1, decimal_places=0, null=False, blank=False, validators=[validate_rating], help_text=_("Pick between 1 to 5"))
     content    = models.TextField(verbose_name=_("Content"), max_length=250, null=False, blank=False)
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(null=True, blank=True)
 
     history    = HistoricalRecords()
 
