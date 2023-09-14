@@ -87,10 +87,6 @@ class User(AbstractUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         self.first_name = self.first_name.capitalize()
         self.last_name = self.last_name.capitalize()
-        self.email = f"{self.username}@dummyemail.com".lower() # Try
-        self.phone_number = f"98{generate_8_digit_random_number()}" # Try
-        self.is_email_verified = True # Try
-        self.is_phone_verified = True # Try
         """
            Add unique username to each users
         """
