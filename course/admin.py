@@ -85,10 +85,10 @@ class ScheduleAdminForm(forms.ModelForm):
 
 class ScheduleModelAdmin(admin.ModelAdmin):
     list_display = ['schedule_name', 'plan']
-    list_filter = ['is_active']
+    list_filter = ['is_active', 'to_course', 'plan']
     form = ScheduleAdminForm
     fieldsets = [
-        ('Schedule Name', {'fields': ['schedule_name']}),
+        # ('Schedule Name', {'fields': ['schedule_name']}),
         ('Schedule for Course', {'fields': ['to_course']}),
         ('Schedule for Guru', {'fields': ['guru']}),
         ('Plan Associated', {'fields': ['plan']}),

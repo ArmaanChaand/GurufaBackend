@@ -193,8 +193,14 @@ class Schedule(models.Model):
         return f"{self.schedule_name } | ({self.to_course})"
     
     def save(self, *args, **kwargs):
-        if not self.schedule_name:
-            self.schedule_name = f"Schedule | {self.to_course.name} | {self.plan.name}" 
+        schedule_name = f"Schedule | {self.to_course.name} | {self.plan.name}"
+        try:
+            first_session = self.timing.filter(is_active=True).first()
+            if first_session:
+                schedule_name += f" | {first_session.date}"
+        except Exception as e:
+            pass
+        self.schedule_name = schedule_name
         super().save(*args, **kwargs)
 
     @property

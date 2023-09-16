@@ -36,7 +36,7 @@ def getCourseReviews(request, course_id):
         return Response(status=404)
 
     paginator = PageNumberPagination()
-    paginator.page_size = 2  # Number of reviews per page
+    paginator.page_size = 10  # Number of reviews per page
     paginated_reviews = paginator.paginate_queryset(course_reviews, request)
 
     serializer = ReviewSerializer(paginated_reviews, many=True)
