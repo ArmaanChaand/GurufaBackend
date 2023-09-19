@@ -53,7 +53,7 @@ class Review(models.Model):
     review_by  = models.ForeignKey(to=User, verbose_name=_("Review given by"), on_delete=models.SET_NULL, null=True, blank=True, related_name='my_reviews')
     to_course  = models.ForeignKey(to=Course, verbose_name=_("Course"), on_delete=models.SET_NULL, null=True, blank=True, related_name='course_reviews', help_text=_("Leave blank, if Review is not for any Course."))
     rating     = models.DecimalField(max_digits=1, decimal_places=0, null=False, blank=False, validators=[validate_rating], help_text=_("Pick between 1 to 5"))
-    content    = models.TextField(verbose_name=_("Content"), max_length=250, null=False, blank=False)
+    content    = models.TextField(verbose_name=_("Content"), max_length=200, null=False, blank=False, help_text=_("Wrap up the review in less than 200 characters."))
     created_at = models.DateTimeField(null=True, blank=True)
 
     history    = HistoricalRecords()

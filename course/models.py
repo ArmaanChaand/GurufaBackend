@@ -1,3 +1,4 @@
+import os
 import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -6,6 +7,17 @@ from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from simple_history.models import HistoricalRecords
 # Create your models here.
+
+def validate_course_icon_file_type(value):
+    # Get the file extension of the uploaded file
+    ext = os.path.splitext(value.name)[1].lower()
+
+    # List of allowed file extensions for images and SVG files
+    allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg']
+
+    # Check if the file extension is in the list of allowed extensions
+    if not ext in allowed_extensions:
+        raise ValidationError("Only image files and SVG files are allowed.")
 
 def validate_course_icon_size(value):
     """Maximum allowed file size in bytes (200KB)"""
@@ -27,7 +39,7 @@ class Course(models.Model):
     title         = models.CharField(_("Course Title"), max_length=150, null=True, blank=True)
     slug          = models.SlugField(_("Slug"), max_length=200, unique=True, editable=True)
     overview      = models.TextField(_("Course Overview"), null=True, blank=True)
-    course_icon   = models.ImageField(upload_to='images/courses/', validators=[validate_course_icon_size])
+    course_icon   = models.FileField(upload_to='images/courses/', validators=[validate_course_icon_size, validate_course_icon_file_type], null=True, blank=True)
     course_banner = models.ImageField(upload_to='images/courses/', validators=[validate_course_banner_size], null=True, blank=True)
     course_banner_url = models.URLField(_("Course Banner URL"), null=True, blank=True)
 
