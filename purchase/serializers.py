@@ -17,7 +17,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = [
             'course_level', 'schedule', 'plan_selected', 'purchase_price',
-            'kids_selected', 'order_id', 'payment_method', 'total_sessions', 'completed_sessions',
+            'kids_selected', 'order_id', 'payment_method', 'payment_platform', 'total_sessions', 'completed_sessions',
             'booking_id'
             ]
     

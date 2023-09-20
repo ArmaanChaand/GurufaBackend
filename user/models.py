@@ -149,3 +149,6 @@ class Kid(models.Model):
         self.kid_last_name = self.kid_last_name.capitalize()
         super(Kid, self).save(*args, **kwargs)
     
+"""
+
+"""

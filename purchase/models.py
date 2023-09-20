@@ -24,7 +24,8 @@ class Purchase(models.Model):
         ('Razorpay', 'Razorpay'),
         ('Cashfree', 'Cashfree'),
     )
-    payment_method  = models.CharField(_("Payment Method"),max_length=50, choices=SESSION_STATUS_CHOICES, null=True, blank=True)
+    payment_platform  = models.CharField(_("Payment Method"),max_length=50, choices=SESSION_STATUS_CHOICES, null=True, blank=True)
+    payment_method  = models.JSONField(_("Payment Method (JSON)"),null=True, blank=True)
     order_id        = models.CharField(_("Order ID"), max_length=200, null=True, blank=True)   
     payment_id      = models.CharField(_("Payment ID"), max_length=200, null=True, blank=True)   
     booking_id      = models.CharField(_("Booking ID"), max_length=120)

@@ -71,7 +71,7 @@ def CreatePurchase(request):
     """DEMO PLAN SELECTED"""
     if purchase_price == 0 or purchase_price < 1:
         purchase.payment_status = 'PAID'
-        purchase.payment_method = 'Free Purchase'
+        purchase.payment_platform = 'Free Purchase'
         schedule.seats_occupied = int(schedule.seats_occupied) + kids_selected.count()
         purchase.order_id = "free_purchase_" + str(user.username) + str(uuid.uuid4().hex[:8])
         purchase.payment_id = "Free Purchase"
@@ -103,7 +103,7 @@ def CreatePurchase(request):
         try:
             razorpay_order = client.order.create(data=DATA)
             purchase.order_id = razorpay_order['id']
-            purchase.payment_method = 'Razorpay'
+            purchase.payment_platform = 'Razorpay'
             purchase.save()
             response_data = {
                 'message': 'Purchase created successfully',
@@ -141,7 +141,7 @@ def CreatePurchase(request):
         try:
             response = requests.post(url, json=payload, headers=headers)
             res_data = json.loads(response.text)
-            purchase.payment_method = 'Cashfree'
+            purchase.payment_platform = 'Cashfree'
             purchase.order_id = res_data['cf_order_id']
             purchase.payment_id = 'TBD'
             purchase.order_signature = '---'
@@ -199,7 +199,7 @@ def failedPurchaseRazorpay(request):
         purchase.order_signature = razorpay_signature
         if purchase.order_id == razorpay_order_id:
             purchase.payment_status = 'FAILED'
-            purchase.payment_method = 'Razorpay'
+            purchase.payment_platform = 'Razorpay'
             purchase.save()
             return Response({"updated": True}, status=status.HTTP_200_OK)
         else :
@@ -216,9 +216,8 @@ def getOrderCashfree(request):
     cf_order_id = request.data.get('cf_order_id')
 
     try:
-        purchase = Purchase.objects.get(booking_id=cf_order_id, user=request.user,  payment_method='Cashfree')
+        purchase = Purchase.objects.get(booking_id=cf_order_id, user=request.user,  payment_platform='Cashfree')
         url = f"{settings.CASHFREE_ENDPOINT}/orders/{cf_order_id}/payments"
-        print(url)
         headers = {
             "accept": "application/json",
             "x-client-id": settings.CASHFREE_APP_ID,
@@ -229,6 +228,7 @@ def getOrderCashfree(request):
         res_data = json.loads(response.text)[0]
         if(res_data['payment_status'] == "SUCCESS"):
             purchase.payment_status = 'PAID'
+            purchase.payment_method = json.dumps(res_data['payment_method'])
             purchase.payment_id = res_data['cf_payment_id']
             purchase.schedule.seats_occupied = int(purchase.schedule.seats_occupied) + purchase.kids_selected.count()
             purchase.schedule.save()
@@ -247,7 +247,7 @@ def getOrderCashfree(request):
                 'payment_status': "FAILED",
                 'order_status': res_data,
                 'order_detail': {
-                    'payment_method' : purchase.payment_method,
+                    'payment_method' : purchase.payment_platform,
                     'payment_id': res_data['cf_payment_id'],
                     'order_id': purchase.booking_id,
                     'error_description': res_data['error_details']['error_description'],

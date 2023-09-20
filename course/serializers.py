@@ -95,7 +95,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Schedule
-        fields = ('id', 'schedule_name', 'start_date', 'end_date', 'seats_left', 'to_course', 'guru', 'timings_by_day', 'num_classes')
+        fields = ('id', 'schedule_name', 'start_date', 'end_date', 'seats_left', 'to_course', 'guru', 'timings_by_day', 'num_classes', 'frequency', 'duration')
 
     def get_start_date(self, obj):
         # Get the earliest ScheduleTiming related to this Schedule
