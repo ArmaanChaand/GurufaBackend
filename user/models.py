@@ -95,6 +95,18 @@ class User(AbstractUser, PermissionsMixin):
             self.username = f"{self.first_name.lower()}{self.last_name.lower()}{random_string}"
 
         super().save(*args, **kwargs)
+    
+    @property
+    def reviewed_courses_list(self):
+        reviews = self.my_reviews.filter(is_active=True)
+        reviewed_courses = [review.to_course.slug for review in reviews if review.to_course.is_active]
+        return reviewed_courses
+
+    @property
+    def purchased_courses_list(self):
+        purchases = self.my_purchase.filter(is_active=True, payment_status='PAID')
+        purchased_courses = [purchase.course_level.to_course.slug for purchase in purchases]
+        return purchased_courses
 
 class OTP(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -12,13 +12,14 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
     total_sessions = serializers.SerializerMethodField()
     completed_sessions = serializers.SerializerMethodField()
+    course_status = serializers.SerializerMethodField()
     
     class Meta:
         model = Purchase
         fields = [
             'course_level', 'schedule', 'plan_selected', 'purchase_price',
             'kids_selected', 'order_id', 'payment_method', 'payment_platform', 'total_sessions', 'completed_sessions',
-            'booking_id'
+            'booking_id', 'course_status'
             ]
     
     def to_representation(self, instance):
@@ -35,7 +36,19 @@ class PurchaseSerializer(serializers.ModelSerializer):
         # Count the number of completed ScheduleTimings associated with the purchase's schedule
         now = datetime.now().time()
         return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count() # Count today
-        # return obj.schedule.timing.filter(date__lt=datetime.now().date(), end_time__lt=now).count() # Omit today
+
+    def get_course_status(self, obj):
+        course_status = 'Not Yet Started'
+        now = datetime.now().time()
+        completed_sessions = obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count()
+        total_sessions     = obj.schedule.timing.count()
+        if completed_sessions < total_sessions and completed_sessions != 0:
+            course_status = 'ongoing'
+
+        if completed_sessions == total_sessions and completed_sessions != 0:
+            course_status = 'completed'
+
+        return course_status
     
 class PurchaseSessionSerializer(serializers.ModelSerializer):
     class Meta:

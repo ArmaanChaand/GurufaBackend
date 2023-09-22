@@ -16,8 +16,8 @@ class userInfoSerializer(serializers.ModelSerializer):
             'is_email_verified', 'is_phone_verified','last_name','email', 'phone_number',
             'picture', 'auth_provider_img',
             'auth_providers','is_a_guru','user_roles',  
-            'is_active',
-            'password'
+            'is_active', 'reviewed_courses_list', 'purchased_courses_list',
+            # 'password'
             ]
         # fields = '__all__'    
     
@@ -63,11 +63,12 @@ class KidsPurchaseSerializer(serializers.ModelSerializer):
 
     total_sessions = serializers.SerializerMethodField()
     completed_sessions = serializers.SerializerMethodField()
+    course_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Purchase
-        fields = ['course_level', 'schedule', 'plan_selected', 
-                'purchase_price', 'kids_selected', 'total_sessions', 'completed_sessions']
+        fields = ['course_level', 'schedule', 'plan_selected', 'booking_id',
+                'purchase_price', 'kids_selected', 'total_sessions', 'completed_sessions', 'course_status']
     
     def get_total_sessions(self, obj):
         # Count the total number of ScheduleTimings associated with the purchase's schedule
@@ -77,6 +78,19 @@ class KidsPurchaseSerializer(serializers.ModelSerializer):
         # Count the number of completed ScheduleTimings associated with the purchase's schedule
         now = datetime.now().time()
         return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count()
+    
+    def get_course_status(self, obj):
+        course_status = 'Not Yet Started'
+        now = datetime.now().time()
+        completed_sessions = obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count()
+        total_sessions     = obj.schedule.timing.count()
+        if completed_sessions < total_sessions and completed_sessions != 0:
+            course_status = 'ongoing'
+
+        if completed_sessions == total_sessions and completed_sessions != 0:
+            course_status = 'completed'
+
+        return course_status
     
     def to_representation(self, instance):
         if instance.payment_status == 'PAID':

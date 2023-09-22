@@ -6,7 +6,7 @@ from simple_history.models import HistoricalRecords
 # Create your models here.
 
 class Purchase(models.Model):
-    is_active = models.BooleanField(default=True, null=False, blank=False)
+    is_active      = models.BooleanField(default=True, null=False, blank=False)
     user           = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Purchased By"), related_name='my_purchase')
     course_level   = models.ForeignKey(to=Levels, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course Level Selected"))
     schedule       = models.ForeignKey(to=Schedule, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Batch Enrolled in"))
