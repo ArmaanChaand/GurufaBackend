@@ -28,6 +28,7 @@ class PurchaseAdminForm(forms.ModelForm):
         return cleaned_data
 
 class PurchaseAdmin(admin.ModelAdmin):
+    list_filter = ['is_active','course_level']
     form = PurchaseAdminForm
 
 admin.site.register(Purchase, PurchaseAdmin )

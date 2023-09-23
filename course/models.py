@@ -45,6 +45,98 @@ class Course(models.Model):
 
     history       = HistoricalRecords()
 
+    @property
+    def review_count(self):
+        return self.course_reviews.filter(is_active=True).count()
+
+    @property
+    def average_rating(self):
+        reviews = self.course_reviews.filter(is_active=True)
+        if reviews.exists():
+            total_rating = sum(review.rating for review in reviews)
+            average = total_rating / reviews.count()
+            return round(average, 2)  
+        return 0.0 
+
+    @property
+    def purchase_count(self):
+        active_levels = self.my_levels.filter(is_active=True)
+        purchase_count = 0
+        for level in active_levels:
+            level_purchases = level.level_purchase.filter(is_active=True, payment_status='PAID')
+            purchase_count += level_purchases.count()
+        return purchase_count
+
+    @property
+    def participants_count(self):
+        # Filter active levels associated with the course
+        active_levels = self.my_levels.filter(is_active=True)
+
+        # Initialize a counter for the total participants
+        total_participants = 0
+
+        # Iterate through the active levels
+        for level in active_levels:
+            # Get all the purchases for this level that are active and have a 'PAID' payment status
+            level_purchases = level.level_purchase.filter(is_active=True, payment_status='PAID')
+
+            # Iterate through the purchases for this level and count the kids_selected
+            for purchase in level_purchases:
+                total_participants += purchase.kids_selected.count()
+
+        return total_participants
+        
+    
+    @property
+    def starting_price(self):
+        # Get all the plans linked with the course
+        plans = self.my_plans.filter(is_active=True)
+
+        # Initialize a list to store non-zero prices
+        non_zero_prices = []
+
+        # Check if there are any plans
+        if plans:
+            # Iterate through the plans and collect non-zero prices
+            for plan in plans:
+                if plan.price > 0:
+                    non_zero_prices.append(plan.price)
+
+            # If there are non-zero prices, find the minimum among them
+            if non_zero_prices:
+                min_non_zero_price = min(non_zero_prices)
+                return min_non_zero_price
+            else:
+                # If all prices are zero, return zero or any other default value as needed
+                return 0  # You can change this default value as needed
+        else:
+            # Return a default value if there are no plans
+            return 0  # You can change this default value as needed
+
+    @property
+    def max_capacity(self):
+        schedules = self.course_schedules.filter(is_active=True)
+        max_total_num_of_seats = schedules.aggregate(max_total_num_of_seats=models.Max('total_num_of_seats'))
+        return max_total_num_of_seats['max_total_num_of_seats'] or 5
+    
+    @property
+    def min_num_classes(self):
+        schedules = self.course_schedules.filter(is_active=True)
+        min_num_classes = schedules.aggregate(min_num_classes=models.Min('num_classes'))['min_num_classes']
+        return min_num_classes or 0
+
+    @property
+    def min_frequency(self):
+        schedules = self.course_schedules.filter(is_active=True)
+        min_frequency = schedules.aggregate(min_frequency=models.Min('frequency'))['min_frequency']
+        return min_frequency or 0
+
+    @property
+    def min_duration(self):
+        schedules = self.course_schedules.filter(is_active=True)
+        min_duration = schedules.aggregate(min_duration=models.Min('duration'))['min_duration']
+        return min_duration or 0
+
     class Meta:
         verbose_name = 'Course'
         verbose_name_plural = 'Courses'
@@ -73,52 +165,6 @@ class Course(models.Model):
         if not self.slug or self.pk is None:
             self.slug = slugify(self.name) + str(uuid.uuid4().hex[:8])
         super().save(*args, **kwargs)
-    
-    def get_max_capacity(self):
-        schedules = self.course_schedules.filter(is_active=True)
-        max_total_num_of_seats = schedules.aggregate(max_total_num_of_seats=models.Max('total_num_of_seats'))
-        return max_total_num_of_seats['max_total_num_of_seats'] or 5
-    
-
-    def get_min_num_classes(self):
-        schedules = self.course_schedules.filter(is_active=True)
-        min_num_classes = schedules.aggregate(min_num_classes=models.Min('num_classes'))['min_num_classes']
-        return min_num_classes or 0
-
-    def get_min_frequency(self):
-        schedules = self.course_schedules.filter(is_active=True)
-        min_frequency = schedules.aggregate(min_frequency=models.Min('frequency'))['min_frequency']
-        return min_frequency or 0
-
-    def get_min_duration(self):
-        schedules = self.course_schedules.filter(is_active=True)
-        min_duration = schedules.aggregate(min_duration=models.Min('duration'))['min_duration']
-        return min_duration or 0
-
-    def get_starting_price(self):
-        # Get all the plans linked with the course
-        plans = self.my_plans.filter(is_active=True)
-
-        # Initialize a list to store non-zero prices
-        non_zero_prices = []
-
-        # Check if there are any plans
-        if plans:
-            # Iterate through the plans and collect non-zero prices
-            for plan in plans:
-                if plan.price > 0:
-                    non_zero_prices.append(plan.price)
-
-            # If there are non-zero prices, find the minimum among them
-            if non_zero_prices:
-                min_non_zero_price = min(non_zero_prices)
-                return min_non_zero_price
-            else:
-                # If all prices are zero, return zero or any other default value as needed
-                return 0  # You can change this default value as needed
-        else:
-            # Return a default value if there are no plans
-            return 0  # You can change this default value as needed
         
     
 
@@ -182,7 +228,7 @@ class Plans(models.Model):
 
 class Schedule(models.Model):
     is_active           = models.BooleanField(default=True, null=False, blank=False)
-    to_course           = models.ForeignKey(to=Course, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course"), related_name='course_schedules')
+    to_course_level     = models.ForeignKey(to=Levels, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course Level"), related_name='course_schedules')
     plan                = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan"))
     guru                = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"), related_name='plan_associated'
                                            )
@@ -196,16 +242,31 @@ class Schedule(models.Model):
 
     history             = HistoricalRecords()
 
+    @property
+    def start_date(self):
+        # Get the earliest Session related to this Schedule
+        earliest_timing = self.timing.filter(is_active=True).order_by('date', 'start_time').first()
+        if earliest_timing:
+            return earliest_timing.date
+        return None
+
+    @property
+    def end_date(self):
+        # Get the latest Session related to this Schedule
+        last_timing = self.timing.filter(is_active=True).order_by('-date', '-end_time').first()
+        if last_timing:
+            return last_timing.date
+        return None
 
     class Meta:
         verbose_name = 'Schedule'
         verbose_name_plural = 'Schedules' 
 
     def __str__(self) -> str:
-        return f"{self.schedule_name } | ({self.to_course})"
+        return self.schedule_name
     
     def save(self, *args, **kwargs):
-        schedule_name = f"Schedule | {self.to_course.name} | {self.plan.name}"
+        schedule_name = f"Schedule | {self.to_course_level.name} ({self.to_course_level.to_course.slug}) | {self.plan.name}"
         try:
             first_session = self.timing.filter(is_active=True).first()
             if first_session:
@@ -219,7 +280,7 @@ class Schedule(models.Model):
     def seats_left(self):
         return self.total_num_of_seats - self.seats_occupied
 
-class ScheduleTiming(models.Model):
+class Session(models.Model):
     is_active   = models.BooleanField(default=True, null=False, blank=False)
     batch       = models.ForeignKey(to=Schedule, on_delete=models.CASCADE, related_name='timing')
     date        = models.DateField(_("Date"))

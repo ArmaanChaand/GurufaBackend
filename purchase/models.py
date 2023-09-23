@@ -8,7 +8,7 @@ from simple_history.models import HistoricalRecords
 class Purchase(models.Model):
     is_active      = models.BooleanField(default=True, null=False, blank=False)
     user           = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Purchased By"), related_name='my_purchase')
-    course_level   = models.ForeignKey(to=Levels, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course Level Selected"))
+    course_level   = models.ForeignKey(to=Levels, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course Level Selected"), related_name='level_purchase')
     schedule       = models.ForeignKey(to=Schedule, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Batch Enrolled in"))
     plan_selected  = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan Selected"))
     kids_selected  = models.ManyToManyField(to=Kid, related_name='my_purchases', blank=True)

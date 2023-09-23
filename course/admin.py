@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.core.exceptions import ValidationError
 # Register your models here.
-from .models import Course, Levels, Plans, Schedule, ScheduleTiming
+from .models import Course, Levels, Plans, Schedule, Session
 from home.models import FAQs, Review
 
 class LevelsModelInline(admin.TabularInline):
@@ -35,7 +35,7 @@ class CourseModelAdmin(admin.ModelAdmin):
         ('Activity Status', {'fields': ['is_active']}),
     ]
 
-    inlines = [LevelsModelInline, PlansModelInline, ScheduleModelInline, FAQsModelInline, ReviewModelInline]
+    inlines = [LevelsModelInline, PlansModelInline, FAQsModelInline, ReviewModelInline]
     
 admin.site.register(Course, CourseModelAdmin)
 
@@ -48,6 +48,7 @@ class LevelsModelAdmin(admin.ModelAdmin):
         ('Price Modifiers', {'fields': ['increment', 'decrement']}),
         ('Activity Status', {'fields': ['is_active']}),
     ]
+    inlines = [ScheduleModelInline]
 admin.site.register(Levels, LevelsModelAdmin)
 
 class PlansModelAdmin(admin.ModelAdmin):
@@ -61,8 +62,8 @@ class PlansModelAdmin(admin.ModelAdmin):
     ]
 admin.site.register(Plans, PlansModelAdmin)
 
-class ScheduleTimingModelInline(admin.TabularInline):
-    model = ScheduleTiming
+class SessionModelInline(admin.TabularInline):
+    model = Session
     extra = 0
 
 
@@ -70,37 +71,37 @@ class ScheduleTimingModelInline(admin.TabularInline):
 class ScheduleAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.to_course:
-            self.fields['plan'].queryset = self.instance.to_course.my_plans.all()
+        if self.instance.to_course_level:
+            self.fields['plan'].queryset = self.instance.to_course_level.to_course.my_plans.all()
     
     def clean(self):
         cleaned_data = super().clean()
         plan      = cleaned_data.get('plan')
-        to_course = cleaned_data.get('to_course')
+        to_course_level = cleaned_data.get('to_course_level')
         
-        if to_course and plan and not to_course == plan.course:
+        if to_course_level and plan and not to_course_level.to_course == plan.course:
             raise ValidationError("Choose Plan of the Course selected.")
         
         return cleaned_data
 
 class ScheduleModelAdmin(admin.ModelAdmin):
     list_display = ['schedule_name', 'plan']
-    list_filter = ['is_active', 'to_course', 'plan']
+    list_filter = ['is_active', 'to_course_level', 'plan']
     form = ScheduleAdminForm
     fieldsets = [
         # ('Schedule Name', {'fields': ['schedule_name']}),
-        ('Schedule for Course', {'fields': ['to_course']}),
+        ('Schedule for Course Level', {'fields': ['to_course_level']}),
         ('Schedule for Guru', {'fields': ['guru']}),
         ('Plan Associated', {'fields': ['plan']}),
         ('Number of Seats', {'fields': ['total_num_of_seats', 'seats_occupied']}),
         ('Class Details', {'fields': ['num_classes', 'frequency', 'duration']}),
         ('Activity Status', {'fields': ['is_active']}),
     ]
-    inlines = [ScheduleTimingModelInline]
+    inlines = [SessionModelInline]
     
 admin.site.register(Schedule, ScheduleModelAdmin)
 
-class ScheduleTimingModelAdmin(admin.ModelAdmin):
+class SessionModelAdmin(admin.ModelAdmin):
     list_display = ['date', 'start_time', 'batch']
     list_filter  = ['is_active', 'date']
     fieldsets = [
@@ -109,6 +110,6 @@ class ScheduleTimingModelAdmin(admin.ModelAdmin):
         ('Activity Status', {'fields': ['is_active']}),
     ]
 
-admin.site.register(ScheduleTiming, ScheduleTimingModelAdmin)
+admin.site.register(Session, SessionModelAdmin)
 
 

@@ -29,11 +29,11 @@ class PurchaseSerializer(serializers.ModelSerializer):
             return None
     
     def get_total_sessions(self, obj):
-        # Count the total number of ScheduleTimings associated with the purchase's schedule
+        # Count the total number of Sessions associated with the purchase's schedule
         return obj.schedule.timing.count()
 
     def get_completed_sessions(self, obj):
-        # Count the number of completed ScheduleTimings associated with the purchase's schedule
+        # Count the number of completed Sessions associated with the purchase's schedule
         now = datetime.now().time()
         return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count() # Count today
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Course, Levels, Plans, Schedule, ScheduleTiming
+from .models import Course, Levels, Plans, Schedule, Session
 from home.serializers import FAQsSerializer
 from datetime import date
 from user.serializers import kidInfoSerializer
@@ -27,59 +27,21 @@ class CourseSerializer(serializers.ModelSerializer):
     my_levels = LevelsSerializer(many=True, read_only=True)
     my_plans = PlansSerializer(many=True, read_only=True)
     course_faqs = FAQsSerializer(many=True, read_only=True)
-    review_count = serializers.SerializerMethodField()
-    average_rating = serializers.SerializerMethodField() 
-    max_capacity = serializers.SerializerMethodField() 
-    purchase_count = serializers.SerializerMethodField()
-    min_num_classes = serializers.SerializerMethodField() 
-    min_frequency = serializers.SerializerMethodField() 
-    min_duration = serializers.SerializerMethodField() 
-    starting_price = serializers.SerializerMethodField() 
 
     class Meta:
         model = Course
         fields = [
-            'id', 'name', 'title', 'course_icon', 'course_banner', 'course_banner_url', 'slug', 
-            'overview', 'my_plans', 'my_levels', 'course_faqs', 
-            'review_count', 'average_rating', 'max_capacity',
-            'purchase_count', 'min_num_classes', 'min_frequency', 'min_duration', 'starting_price'
+            'id', 'name','slug','title','overview','course_icon', 'course_banner', 'course_banner_url',
+            'review_count', 'average_rating', 'purchase_count','participants_count',
+            'max_capacity', 'min_num_classes', 'min_frequency', 'min_duration', 'starting_price',
+            'my_plans', 'my_levels', 'course_faqs', 
         ]
-
-    def get_review_count(self, obj):
-        return Review.objects.filter(to_course=obj).count()
-    
-    def get_average_rating(self, obj):
-        reviews = Review.objects.filter(to_course=obj)
-        if reviews.exists():
-            total_rating = sum(review.rating for review in reviews)
-            average = total_rating / reviews.count()
-            return round(average, 2)  # Round the average to 2 decimal places
-        return 0.0  # Return 0 if there are no reviews
-    
-    def get_max_capacity(self, obj):
-        return obj.get_max_capacity()
-
-    def get_min_num_classes(self, obj):
-        return obj.get_min_num_classes()
-
-    def get_min_frequency(self, obj):
-        return obj.get_min_frequency()
-
-    def get_min_duration(self, obj):
-        return obj.get_min_duration()
-    
-    def get_starting_price(self, obj):
-        return obj.get_starting_price()
-    
-    def get_purchase_count(self, obj):
-        # Count the related purchases for the course
-        return obj.my_levels.all().aggregate(purchase_count=models.Count('purchase'))['purchase_count']
     
 
-class ScheduleTimingSerializer(serializers.ModelSerializer):
+class SessionSerializer(serializers.ModelSerializer):
     day = serializers.SerializerMethodField()
     class Meta:
-        model = ScheduleTiming
+        model = Session
         fields = ['id', 'date', 'start_time', 'end_time', 'day']
     
     def get_day(self, obj):
@@ -87,29 +49,13 @@ class ScheduleTimingSerializer(serializers.ModelSerializer):
     
     
 class ScheduleSerializer(serializers.ModelSerializer):
-    timings_by_day = serializers.SerializerMethodField()
     to_course = CourseSerializer(many=False, read_only=True)
-    start_date = serializers.SerializerMethodField()
-    end_date = serializers.SerializerMethodField()
     guru = GuruSerializerForSchedule(many=False, read_only=True)
+    timings_by_day = serializers.SerializerMethodField()
 
     class Meta:
         model = Schedule
         fields = ('id', 'schedule_name', 'start_date', 'end_date', 'seats_left', 'to_course', 'guru', 'timings_by_day', 'num_classes', 'frequency', 'duration')
-
-    def get_start_date(self, obj):
-        # Get the earliest ScheduleTiming related to this Schedule
-        earliest_timing = obj.timing.filter(is_active=True).order_by('date', 'start_time').first()
-        if earliest_timing:
-            return earliest_timing.date
-        return None
-
-    def get_end_date(self, obj):
-        # Get the latest ScheduleTiming related to this Schedule
-        latest_timing = obj.timing.filter(is_active=True).order_by('-date', '-end_time').first()
-        if latest_timing:
-            return latest_timing.date
-        return None
 
     def get_timings_by_day(self, obj):
         # Get all active timings related to this Schedule
@@ -123,7 +69,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
             # Check if the day is already in the dictionary
             if day not in unique_timings_by_day:
-                unique_timings_by_day[day] = ScheduleTimingSerializer(timing).data
+                unique_timings_by_day[day] = SessionSerializer(timing).data
 
         # Arrange the timings by days of the week (Monday to Sunday)
         arranged_timings = []
