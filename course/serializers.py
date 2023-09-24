@@ -21,7 +21,11 @@ class LevelsSerializer(serializers.ModelSerializer):
     to_course = CourseSerializerSmall(many=False, read_only=True)
     class Meta:
         model = Levels
-        fields = ['id', 'name', 'description', 'to_course', 'increment', 'decrement']
+        fields = [
+                    'id', 'name', 'description','increment', 'decrement', 
+                    'num_classes', 'frequency', 'duration',
+                    'to_course', 
+                ]
 
 class CourseSerializer(serializers.ModelSerializer):
     my_levels = LevelsSerializer(many=True, read_only=True)
@@ -49,13 +53,12 @@ class SessionSerializer(serializers.ModelSerializer):
     
     
 class ScheduleSerializer(serializers.ModelSerializer):
-    to_course = CourseSerializer(many=False, read_only=True)
     guru = GuruSerializerForSchedule(many=False, read_only=True)
     timings_by_day = serializers.SerializerMethodField()
 
     class Meta:
         model = Schedule
-        fields = ('id', 'schedule_name', 'start_date', 'end_date', 'seats_left', 'to_course', 'guru', 'timings_by_day', 'num_classes', 'frequency', 'duration')
+        fields = ('id', 'schedule_name', 'start_date', 'end_date', 'seats_left', 'to_course_level', 'guru', 'timings_by_day')
 
     def get_timings_by_day(self, obj):
         # Get all active timings related to this Schedule

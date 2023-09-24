@@ -45,6 +45,7 @@ class LevelsModelAdmin(admin.ModelAdmin):
     list_filter = ['name', 'to_course', 'is_active']
     fieldsets = [
         ('Level Description', {'fields': ['name', 'description', 'to_course']}),
+        ('Class Details', {'fields': ['frequency', 'duration', 'num_classes']}),
         ('Price Modifiers', {'fields': ['increment', 'decrement']}),
         ('Activity Status', {'fields': ['is_active']}),
     ]
@@ -85,8 +86,8 @@ class ScheduleAdminForm(forms.ModelForm):
         return cleaned_data
 
 class ScheduleModelAdmin(admin.ModelAdmin):
-    list_display = ['schedule_name', 'plan']
-    list_filter = ['is_active', 'to_course_level', 'plan']
+    list_display = ['id', 'to_course_level', 'plan', 'guru']
+    list_filter = ['is_active', 'to_course_level', 'plan', 'guru']
     form = ScheduleAdminForm
     fieldsets = [
         # ('Schedule Name', {'fields': ['schedule_name']}),
@@ -94,7 +95,6 @@ class ScheduleModelAdmin(admin.ModelAdmin):
         ('Schedule for Guru', {'fields': ['guru']}),
         ('Plan Associated', {'fields': ['plan']}),
         ('Number of Seats', {'fields': ['total_num_of_seats', 'seats_occupied']}),
-        ('Class Details', {'fields': ['num_classes', 'frequency', 'duration']}),
         ('Activity Status', {'fields': ['is_active']}),
     ]
     inlines = [SessionModelInline]
@@ -105,6 +105,7 @@ class SessionModelAdmin(admin.ModelAdmin):
     list_display = ['date', 'start_time', 'batch']
     list_filter  = ['is_active', 'date']
     fieldsets = [
+        ('Batch', {'fields': ['batch']}),
         ('Date', {'fields': ['date']}),
         ('Batch Timing', {'fields': ['start_time', 'end_time']}),
         ('Activity Status', {'fields': ['is_active']}),

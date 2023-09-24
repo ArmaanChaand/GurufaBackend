@@ -175,6 +175,9 @@ class Levels(models.Model):
     description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
     increment   = models.DecimalField(verbose_name=_("Increase price by: "), decimal_places=2, max_digits=50,default=0, null=True, blank=True)
     decrement   = models.DecimalField(verbose_name=_("Decrease price by: "), decimal_places=2, max_digits=50, default=0, null=True, blank=True)
+    num_classes = models.IntegerField(_("Number Of Classes"), null=True, blank=True)
+    frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
+    duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
 
     history     = HistoricalRecords()
 
@@ -236,10 +239,6 @@ class Schedule(models.Model):
     total_num_of_seats  = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
     seats_occupied      = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
 
-    num_classes = models.IntegerField(_("Number Of Classes"), null=True, blank=True)
-    frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
-    duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
-
     history             = HistoricalRecords()
 
     @property
@@ -266,8 +265,9 @@ class Schedule(models.Model):
         return self.schedule_name
     
     def save(self, *args, **kwargs):
-        schedule_name = f"Schedule | {self.to_course_level.name} ({self.to_course_level.to_course.slug}) | {self.plan.name}"
+        schedule_name = ""
         try:
+            schedule_name = f"Schedule | {self.to_course_level.name} ({self.to_course_level.to_course.slug}) | {self.plan.name}"
             first_session = self.timing.filter(is_active=True).first()
             if first_session:
                 schedule_name += f" | {first_session.date}"
@@ -293,4 +293,60 @@ class Session(models.Model):
         verbose_name = 'Session'
         verbose_name_plural = 'Sessions' 
 
-    
+
+"""PRACTICE/DEVELOPMENT PURPOSE"""
+def createDuplicateSchedules(sample_id):
+    try:
+        sample = Schedule.objects.get(id=sample_id)
+        course_levels = sample.plan.course.my_levels.filter(is_active=True)
+        sample.to_course_level = course_levels[0]
+        sample_timings = sample.timing.all()
+        sample.save()
+
+        # INTERMEDIATE
+        int_one = Schedule.objects.create(
+            plan=sample.plan,
+            guru=sample.guru,
+            total_num_of_seats=sample.total_num_of_seats,
+            seats_occupied=sample.seats_occupied,
+            num_classes=sample.num_classes,
+            duration=sample.duration,
+            frequency=sample.frequency,
+            to_course_level=course_levels[1]
+        )
+        int_one.save()
+        for timing in sample_timings:
+            new_timing = Session.objects.create(
+                batch=int_one,
+                date=timing.date,
+                start_time=timing.start_time,
+                end_time=timing.end_time,
+            )
+            new_timing.save()
+        int_one.save()
+
+        # ADVANCED
+        adv_one = Schedule.objects.create(
+            plan=sample.plan,
+            guru=sample.guru,
+            total_num_of_seats=sample.total_num_of_seats,
+            seats_occupied=sample.seats_occupied,
+            num_classes=sample.num_classes,
+            duration=sample.duration,
+            frequency=sample.frequency,
+            to_course_level=course_levels[2]
+        )
+        adv_one.save()
+        for timing in sample_timings:
+            new_timing = Session.objects.create(
+                batch=adv_one,
+                date=timing.date,
+                start_time=timing.start_time,
+                end_time=timing.end_time,
+            )
+            new_timing.save()
+        int_one.save()
+        adv_one.save()
+
+    except Exception as e:
+        print("ERROR ",e)

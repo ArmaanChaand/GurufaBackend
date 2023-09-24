@@ -60,7 +60,6 @@ class KidsPurchaseLevelsSerializer(serializers.ModelSerializer):
 
 class KidsPurchaseSerializer(serializers.ModelSerializer):
     course_level = KidsPurchaseLevelsSerializer(many=False, read_only=True)
-
     total_sessions = serializers.SerializerMethodField()
     completed_sessions = serializers.SerializerMethodField()
     course_status = serializers.SerializerMethodField()
@@ -72,7 +71,7 @@ class KidsPurchaseSerializer(serializers.ModelSerializer):
     
     def get_total_sessions(self, obj):
         # Count the total number of Sessions associated with the purchase's schedule
-        return obj.schedule.timing.count()
+        return obj.schedule.timing.count() or 0
 
     def get_completed_sessions(self, obj):
         # Count the number of completed Sessions associated with the purchase's schedule
