@@ -24,6 +24,7 @@ def CreatePurchase(request):
     plan_selected_id = request.data.get('plan_selected_id')
     kids_selected_ids = request.data.get('kids_selected_ids')
     purchase_price = request.data.get('purchase_price')
+    purchase_session_identifier = request.data.get('purchase_session')
 
     try:
         user = request.user
@@ -45,6 +46,11 @@ def CreatePurchase(request):
     except Plans.DoesNotExist:
         return Response({'error': 'Invalid plan selected ID'}, status=status.HTTP_400_BAD_REQUEST)
 
+    try:
+        purchase_session = PurchaseSession.objects.get(identifier=purchase_session_identifier)
+    except Exception as e:
+        purchase_session = None
+
     kids_selected = user.my_kids.filter(id__in=kids_selected_ids)
 
     new_booking_id = course_level.to_course.slug[:3] + str(uuid.uuid4().hex[:7])
@@ -57,16 +63,7 @@ def CreatePurchase(request):
         booking_id= new_booking_id.upper()
     )
     purchase.kids_selected.set(kids_selected)
-    purchase_sessions = PurchaseSession.objects.filter(
-            user=user,
-            course_selected=course_level.to_course,
-            plan_selected=plan_selected,
-            level_selected=course_level,
-            session_status = 'INCOMPLETE'
-    )
-    for purchase_session in purchase_sessions:
-            purchase_session.session_status = 'COMPLETED'
-            purchase_session.save()
+    purchase.purchase_session = purchase_session
 
     """DEMO PLAN SELECTED"""
     if purchase_price == 0 or purchase_price < 1:
@@ -176,6 +173,11 @@ def successPurchaseRazorpay(request):
             purchase.payment_status = 'PAID'
             purchase.schedule.seats_occupied = int(purchase.schedule.seats_occupied) + purchase.kids_selected.count()
             purchase.schedule.save()
+            try:
+                purchase.purchase_session.session_status = 'COMPLETED'
+                purchase.purchase_session.save()
+            except Exception as e:
+                pass
             purchase.save()
             purchase_data = PurchaseSerializer(purchase)
             return Response({"updated": True, 'purchase_data': purchase_data.data},  status=status.HTTP_200_OK)
@@ -232,6 +234,11 @@ def getOrderCashfree(request):
             purchase.payment_id = res_data['cf_payment_id']
             purchase.schedule.seats_occupied = int(purchase.schedule.seats_occupied) + purchase.kids_selected.count()
             purchase.schedule.save()
+            try:
+                purchase.purchase_session.session_status = 'COMPLETED'
+                purchase.purchase_session.save()
+            except Exception as e:
+                pass
             purchase.save()
             response_data = {
                 'payment_status': "SUCCESS",

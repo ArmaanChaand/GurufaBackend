@@ -4,6 +4,24 @@ from user.models import User, Kid
 from course.models import Course, Plans, Levels, Schedule
 from simple_history.models import HistoricalRecords
 # Create your models here.
+class PurchaseSession(models.Model):
+    identifier       = models.CharField(max_length=100, unique=True)
+    user             = models.ForeignKey(to=User, on_delete=models.CASCADE)                        
+    course_selected  = models.ForeignKey(to=Course, on_delete=models.CASCADE)
+    plan_selected    = models.ForeignKey(to=Plans, on_delete=models.CASCADE)
+    level_selected   = models.ForeignKey(to=Levels, on_delete=models.CASCADE)
+    SESSION_STATUS_CHOICES = (
+        ('INCOMPLETE', 'INCOMPLETE'),
+        ('COMPLETED', 'COMPLETED'),
+    )
+    session_status   = models.CharField(max_length=20, choices=SESSION_STATUS_CHOICES, null=True, blank=True, default="INCOMPLETE", help_text="'COMPLETED' refers that user made purchase with this session. Purchase may be failed or succeeded.")
+
+    class Meta:
+        verbose_name = 'Purchase Session'
+        verbose_name_plural = 'Purchase Sessions'
+    
+    def __str__(self) -> str:
+        return f"{self.identifier} -•- {self.user}"
 
 class Purchase(models.Model):
     is_active      = models.BooleanField(default=True, null=False, blank=False)
@@ -32,31 +50,12 @@ class Purchase(models.Model):
     order_signature = models.CharField(_("Razorpay Signature"), max_length=200, null=True, blank=True)   
     purchased_at    = models.DateTimeField(verbose_name="Purchased At", auto_now_add=True)
     last_modified_at= models.DateTimeField(verbose_name="Last Modified At", auto_now=True)
+    purchase_session = models.OneToOneField(to=PurchaseSession, related_name='purchase', null=True, blank=False, on_delete=models.SET_NULL, verbose_name="Purchase Session")
     history           = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Purchase'
         verbose_name_plural = 'Purchases'
 
-    def __str__(self) -> str:
-        return f"{self.id} | {self.user}"
-
-
-class PurchaseSession(models.Model):
-    identifier       = models.CharField(max_length=100, unique=True)
-    user             = models.ForeignKey(to=User, on_delete=models.CASCADE)                        
-    course_selected  = models.ForeignKey(to=Course, on_delete=models.CASCADE)
-    plan_selected    = models.ForeignKey(to=Plans, on_delete=models.CASCADE)
-    level_selected   = models.ForeignKey(to=Levels, on_delete=models.CASCADE)
-    SESSION_STATUS_CHOICES = (
-        ('INCOMPLETE', 'INCOMPLETE'),
-        ('COMPLETED', 'COMPLETED'),
-    )
-    session_status   = models.CharField(max_length=20, choices=SESSION_STATUS_CHOICES, null=True, blank=True, default="INCOMPLETE", help_text="'COMPLETED' refers that user made purchase with this session. Purchase may be failed or succeeded.")
-
-    class Meta:
-        verbose_name = 'Purchase Session'
-        verbose_name_plural = 'Purchase Sessions'
-    
     def __str__(self) -> str:
         return f"{self.id} | {self.user}"
