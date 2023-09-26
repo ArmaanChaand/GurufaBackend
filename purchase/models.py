@@ -50,7 +50,7 @@ class Purchase(models.Model):
     order_signature = models.CharField(_("Razorpay Signature"), max_length=200, null=True, blank=True)   
     purchased_at    = models.DateTimeField(verbose_name="Purchased At", auto_now_add=True)
     last_modified_at= models.DateTimeField(verbose_name="Last Modified At", auto_now=True)
-    purchase_session = models.OneToOneField(to=PurchaseSession, related_name='purchase', null=True, blank=False, on_delete=models.SET_NULL, verbose_name="Purchase Session")
+    purchase_session = models.OneToOneField(to=PurchaseSession, related_name='purchase', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Purchase Session")
     history           = HistoricalRecords()
 
     class Meta:
