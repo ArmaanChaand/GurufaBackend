@@ -60,8 +60,6 @@ class KidsPurchaseLevelsSerializer(serializers.ModelSerializer):
 
 class KidsPurchaseSerializer(serializers.ModelSerializer):
     course_level = KidsPurchaseLevelsSerializer(many=False, read_only=True)
-
-    completed_sessions = serializers.SerializerMethodField()
     course_status = serializers.SerializerMethodField()
 
     class Meta:
@@ -69,16 +67,11 @@ class KidsPurchaseSerializer(serializers.ModelSerializer):
         fields = ['course_level', 'schedule', 'plan_selected', 'booking_id',
                 'purchase_price', 'kids_selected', 'total_sessions', 'completed_sessions', 'course_status']
 
-    def get_completed_sessions(self, obj):
-        # Count the number of completed Sessions associated with the purchase's schedule
-        now = datetime.now().time()
-        return obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count()
     
     def get_course_status(self, obj):
         course_status = 'Not Yet Started'
-        now = datetime.now().time()
-        completed_sessions = obj.schedule.timing.filter(date__lte=datetime.now().date(), end_time__lt=now).count()
-        total_sessions     = obj.schedule.timing.count()
+        completed_sessions = obj.completed_sessions
+        total_sessions     = obj.total_sessions
         if completed_sessions < total_sessions and completed_sessions != 0:
             course_status = 'ongoing'
 
