@@ -175,7 +175,7 @@ class Levels(models.Model):
     description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
     increment   = models.DecimalField(verbose_name=_("Increase price by: "), decimal_places=2, max_digits=50,default=0, null=True, blank=True)
     decrement   = models.DecimalField(verbose_name=_("Decrease price by: "), decimal_places=2, max_digits=50, default=0, null=True, blank=True)
-    num_classes = models.IntegerField(_("Number Of Classes"), null=True, blank=True)
+    num_classes = models.IntegerField(_("Number Of Classes/Sessions"), null=True, blank=True)
     frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
     duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
 
@@ -187,6 +187,11 @@ class Levels(models.Model):
     
     def __str__(self) -> str:
         return f"{ self.name } ({self.to_course})"
+    
+    def save(self, *args, **kwargs):
+        if not self.num_classes:
+            self.num_classes = round((int(self.frequency) * int(self.duration)), 0)
+        super().save(*args, **kwargs)
     
 class Plans(models.Model):
     PLAN_NAMES_CHOICES = (
@@ -231,7 +236,7 @@ class Plans(models.Model):
 
 class Schedule(models.Model):
     is_active           = models.BooleanField(default=True, null=False, blank=False)
-    to_course_level     = models.ForeignKey(to=Levels, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course Level"), related_name='course_schedules')
+    to_course_level     = models.ForeignKey(to=Levels, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Course Level"), related_name='course_level_schedules')
     plan                = models.ForeignKey(to=Plans, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Plan"))
     guru                = models.ForeignKey(to='guru.Guru', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Guru"), related_name='plan_associated'
                                            )

@@ -2,3 +2,5 @@ ENV
 uninstall.txt
 env
 .env
+db.sqlite3
+.sqlite3

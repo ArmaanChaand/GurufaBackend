@@ -13,7 +13,7 @@ class userInfoSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name','last_name','email', 
             'phone_number', 'whatsapp_update',
-            'is_email_verified', 'is_phone_verified','last_name','email', 'phone_number',
+            'is_email_verified', 'is_phone_verified', 'last_name','email', 'phone_number',
             'picture', 'auth_provider_img',
             'auth_providers','is_a_guru','user_roles',  
             'is_active', 'reviewed_courses_list', 'purchased_courses_list',
@@ -60,7 +60,7 @@ class KidsPurchaseLevelsSerializer(serializers.ModelSerializer):
 
 class KidsPurchaseSerializer(serializers.ModelSerializer):
     course_level = KidsPurchaseLevelsSerializer(many=False, read_only=True)
-    total_sessions = serializers.SerializerMethodField()
+
     completed_sessions = serializers.SerializerMethodField()
     course_status = serializers.SerializerMethodField()
 
@@ -68,10 +68,6 @@ class KidsPurchaseSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = ['course_level', 'schedule', 'plan_selected', 'booking_id',
                 'purchase_price', 'kids_selected', 'total_sessions', 'completed_sessions', 'course_status']
-    
-    def get_total_sessions(self, obj):
-        # Count the total number of Sessions associated with the purchase's schedule
-        return obj.schedule.timing.count() or 0
 
     def get_completed_sessions(self, obj):
         # Count the number of completed Sessions associated with the purchase's schedule

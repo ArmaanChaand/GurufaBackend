@@ -1,3 +1,4 @@
+from datetime import datetime, time
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from user.models import User, Kid
@@ -52,6 +53,28 @@ class Purchase(models.Model):
     last_modified_at= models.DateTimeField(verbose_name="Last Modified At", auto_now=True)
     purchase_session = models.OneToOneField(to=PurchaseSession, related_name='purchase', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Purchase Session")
     history           = HistoricalRecords()
+
+    @property 
+    def total_sessions(self):
+        total_schedules =  self.course_level.course_level_schedules.filter(is_active=True)
+        total_sessions = 0
+        for schedule in total_schedules:
+            total_sessions += schedule.timing.filter(is_active=True).count()
+        return self.course_level.num_classes or total_sessions
+    
+    @property
+    def completed_sessions(self):
+        now = datetime.now()
+        total_schedules =  self.course_level.course_level_schedules.filter(is_active=True)
+        total_sessions = 0
+        for schedule in total_schedules:
+            sessions = schedule.timing.filter(is_active=True)
+            for session in sessions:
+                session_time = datetime.combine(session.date, session.start_time)
+                if now > session_time:
+                    total_sessions += 1
+                    
+        return total_sessions
 
     class Meta:
         verbose_name = 'Purchase'
