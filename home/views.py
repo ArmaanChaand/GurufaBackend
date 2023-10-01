@@ -31,7 +31,7 @@ def getAllReviews(request):
 @api_view(['GET'])
 def getCourseReviews(request, course_id):
     try:
-        course_reviews = Review.objects.filter(to_course_id=course_id)
+        course_reviews = Review.objects.filter(to_course_id=course_id, is_active=True)
     except Review.DoesNotExist:
         return Response(status=404)
 
