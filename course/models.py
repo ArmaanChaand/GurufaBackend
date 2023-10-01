@@ -175,9 +175,9 @@ class Levels(models.Model):
     description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
     increment   = models.DecimalField(verbose_name=_("Increase price by: "), decimal_places=2, max_digits=50,default=0, null=True, blank=True)
     decrement   = models.DecimalField(verbose_name=_("Decrease price by: "), decimal_places=2, max_digits=50, default=0, null=True, blank=True)
-    num_classes = models.IntegerField(_("Number Of Classes/Sessions"), null=True, blank=True)
     frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
     duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
+    num_classes = models.IntegerField(_("Number Of Classes/Sessions"), null=True, blank=True, help_text="Leave blank if it should be calculated via frequency and duration.")
 
     history     = HistoricalRecords()
 
@@ -243,6 +243,9 @@ class Schedule(models.Model):
     schedule_name       = models.CharField(_("Schedule Name"), max_length=100, null=True, blank=True, help_text='Leave blank to automaticallly assign a name.')
     total_num_of_seats  = models.DecimalField(_("Total Number of seats"),max_digits=3, decimal_places=0)
     seats_occupied      = models.DecimalField(_("Number of seats occupied"),max_digits=3, decimal_places=0)
+    frequency   = models.IntegerField(_("Frequency (days/week)"), null=True, blank=True)
+    duration    = models.IntegerField(_("Duration of course (in weeks)"), null=True, blank=True)
+    num_classes = models.IntegerField(_("Number Of Classes/Sessions"), null=True, blank=True, help_text="Leave blank if it should be calculated via frequency and duration.")
 
     history             = HistoricalRecords()
 
@@ -270,6 +273,8 @@ class Schedule(models.Model):
         return self.schedule_name
     
     def save(self, *args, **kwargs):
+        if not self.num_classes:
+            self.num_classes = round((int(self.frequency) * int(self.duration)), 0)
         schedule_name = ""
         try:
             schedule_name = f"Schedule | {self.to_course_level.name} ({self.to_course_level.to_course.slug}) | {self.plan.name}"

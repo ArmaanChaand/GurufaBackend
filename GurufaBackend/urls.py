@@ -20,7 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from user.verifyViews import verify_email, resetKeyView
 from django.contrib.auth import views as auth_views
-
+from django.views.generic import TemplateView
 
 
 
@@ -28,9 +28,8 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('', TemplateView.as_view(template_name='index.html'), name='index-page'),
     path('verify/<str:uidb64>/<str:token>/', verify_email, name='verify_email'),
-
-    
     path('reset/<uidb64>/<token>/', resetKeyView, name='password_reset_confirm'),
 
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

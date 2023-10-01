@@ -95,6 +95,7 @@ class ScheduleModelAdmin(admin.ModelAdmin):
         ('Schedule for Guru', {'fields': ['guru']}),
         ('Plan Associated', {'fields': ['plan']}),
         ('Number of Seats', {'fields': ['total_num_of_seats', 'seats_occupied']}),
+        ('Session details', {'fields': ['frequency', 'duration', 'num_classes']}),
         ('Activity Status', {'fields': ['is_active']}),
     ]
     inlines = [SessionModelInline]

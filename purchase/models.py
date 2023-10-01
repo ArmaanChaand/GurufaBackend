@@ -56,24 +56,18 @@ class Purchase(models.Model):
 
     @property 
     def total_sessions(self):
-        total_schedules =  self.course_level.course_level_schedules.filter(is_active=True)
-        total_sessions = 0
-        for schedule in total_schedules:
-            total_sessions += schedule.timing.filter(is_active=True).count()
-        return self.course_level.num_classes or total_sessions
+        return self.schedule.num_classes if self.schedule.num_classes else self.course_level.num_classes
+
     
     @property
     def completed_sessions(self):
         now = datetime.now()
-        total_schedules =  self.course_level.course_level_schedules.filter(is_active=True)
         total_sessions = 0
-        for schedule in total_schedules:
-            sessions = schedule.timing.filter(is_active=True)
-            for session in sessions:
-                session_time = datetime.combine(session.date, session.start_time)
-                if now > session_time:
-                    total_sessions += 1
-                    
+        sessions = self.schedule.timing.filter(is_active=True)
+        for session in sessions:
+            session_time = datetime.combine(session.date, session.start_time)
+            if now > session_time:
+                total_sessions += 1
         return total_sessions
 
     class Meta:
