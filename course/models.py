@@ -189,8 +189,8 @@ class Levels(models.Model):
         return f"{ self.name } ({self.to_course})"
     
     def save(self, *args, **kwargs):
-        if not self.num_classes:
-            self.num_classes = round((int(self.frequency) * int(self.duration)), 0)
+        if not self.num_classes and self.frequency and self.duration:
+            self.num_classes = round((int(self.frequency) * int(self.duration)), 0) 
         super().save(*args, **kwargs)
     
 class Plans(models.Model):
@@ -273,8 +273,8 @@ class Schedule(models.Model):
         return self.schedule_name
     
     def save(self, *args, **kwargs):
-        if not self.num_classes:
-            self.num_classes = round((int(self.frequency) * int(self.duration)), 0)
+        if not self.num_classes and self.frequency and self.duration:
+            self.num_classes = round((int(self.frequency) * int(self.duration)), 0) 
         schedule_name = ""
         try:
             schedule_name = f"Schedule | {self.to_course_level.name} ({self.to_course_level.to_course.slug}) | {self.plan.name}"
