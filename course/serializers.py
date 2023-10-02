@@ -6,16 +6,23 @@ from user.serializers import kidInfoSerializer
 from guru.serializers import GuruSerializerForSchedule
 from home.models import Review
 from django.db import models
+from api.utils import get_image_with_host
 
 class PlansSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plans
         fields = ['id', 'name','slug', 'description', 'price', 'discounted_price', 'discount_percent']
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['is_active'] = True  # Set 'is_active' to True
+        return data
 
 class CourseSerializerSmall(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ['id', 'name', 'course_icon', 'slug']
+        
 
 class LevelsSerializer(serializers.ModelSerializer):
     to_course = CourseSerializerSmall(many=False, read_only=True)
@@ -26,6 +33,10 @@ class LevelsSerializer(serializers.ModelSerializer):
                     'num_classes', 'frequency', 'duration',
                     'to_course', 
                 ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['is_active'] = True  # Set 'is_active' to True
+        return data
 
 class CourseSerializer(serializers.ModelSerializer):
     my_levels = LevelsSerializer(many=True, read_only=True)
@@ -38,7 +49,9 @@ class CourseSerializer(serializers.ModelSerializer):
             'review_count', 'average_rating', 'purchase_count','participants_count',
             'max_capacity', 'min_num_classes', 'min_frequency', 'min_duration', 'starting_price',
             'my_plans', 'my_levels', 
-        ]
+        ]    
+    
+    
     
 
 class SessionSerializer(serializers.ModelSerializer):

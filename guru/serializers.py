@@ -22,3 +22,5 @@ class GuruSerializerForSchedule(serializers.ModelSerializer):
     class Meta:
         model = Guru
         fields = ['id', 'is_active', 'guru_description', 'experience', 'first_name', 'last_name', 'picture', 'auth_provider_img']
+
+    

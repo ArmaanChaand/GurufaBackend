@@ -32,6 +32,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'ovnx(kzvfkgl%&4m#hox9ln=+hiwusdfsdfwrt24f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == '1'
 
+HOST= os.getenv('HOST', 'http://127.0.0.1:8000/')
+
 ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
@@ -46,9 +48,9 @@ CSRF_TRUSTED_ORIGINS = [
     ]
 CSRF_COOKIE_SECURE = True
 
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_SSL_REDIREC=True #Unless your site should be available over both SSL and non-SSL connections, you may want to either set this setting True or configure a load balancer or reverse-proxy server to redirect all connections to HTTPS.
-# SESSION_COOKIE_SECURE=True
+SECURE_HSTS_SECONDS = 31536000
+# SECURE_SSL_REDIRECT=True #Unless your site should be available over both SSL and non-SSL connections, you may want to either set this setting True or configure a load balancer or reverse-proxy server to redirect all connections to HTTPS.
+SESSION_COOKIE_SECURE=True
 
 # Application definition
 
@@ -264,3 +266,4 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 TWILIO_ACCOUNT_SID  = os.environ['TWILIO_ACCOUNT_SID']
 TWILIO_AUTH_TOKEN   = os.environ['TWILIO_AUTH_TOKEN']
 TWILIO_PHONE_NUMBER = os.environ['TWILIO_PHONE_NUMBER']
+

@@ -5,7 +5,7 @@ from .models import User, Kid
 from .validators import password_validator
 from purchase.models import Purchase
 from course.models import Levels, Course   
-
+from api.utils import get_image_with_host
 
 class userInfoSerializer(serializers.ModelSerializer):
     class Meta: 
@@ -17,9 +17,9 @@ class userInfoSerializer(serializers.ModelSerializer):
             'picture', 'auth_provider_img',
             'auth_providers','is_a_guru','user_roles',  
             'is_active', 'reviewed_courses_list', 'purchased_courses_list',
-            # 'password'
             ]
-        # fields = '__all__'    
+
+        
     
         
 class registerUserSerializer(serializers.ModelSerializer):
@@ -50,6 +50,7 @@ class CourseSerializerSmall(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ['id', 'name','course_icon', 'slug']
+    
 
 class KidsPurchaseLevelsSerializer(serializers.ModelSerializer):
     to_course = CourseSerializerSmall(many=False, read_only=True)
@@ -97,4 +98,5 @@ class kidInfoSerializer(serializers.ModelSerializer):
         if value and value.size > 2 * 1024 * 1024:  
             raise serializers.ValidationError("Image size should be less than 2MB.")
         return value
+
     
