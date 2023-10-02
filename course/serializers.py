@@ -30,7 +30,6 @@ class LevelsSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     my_levels = LevelsSerializer(many=True, read_only=True)
     my_plans = PlansSerializer(many=True, read_only=True)
-    course_faqs = FAQsSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -38,7 +37,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'id', 'name','slug','title','overview','course_icon', 'course_banner', 'course_banner_url',
             'review_count', 'average_rating', 'purchase_count','participants_count',
             'max_capacity', 'min_num_classes', 'min_frequency', 'min_duration', 'starting_price',
-            'my_plans', 'my_levels', 'course_faqs', 
+            'my_plans', 'my_levels', 
         ]
     
 

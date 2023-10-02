@@ -6,6 +6,7 @@ from rest_framework import status
 from .models import FAQs, Review
 from .serializers import FAQsSerializer,ReviewSerializer
 from datetime import datetime
+from course.models import Course
 # Create your views here.
 
 @api_view(http_method_names=['GET'])
@@ -17,6 +18,16 @@ def getAllFaqs(request):
         faqs = FAQs.objects.filter(is_active=True)
     faqs_data = FAQsSerializer(faqs, many=True).data
     return Response(faqs_data)
+
+@api_view(http_method_names=['GET'])
+def getCourseFaqs(request, course_slug):
+    try:
+        course = Course.objects.get(slug=course_slug)
+        faqs = FAQs.objects.filter(is_active=True, to_course=course)
+    except Exception as e:
+        return Response({"error": "No FAQs found."}, status=status.HTTP_404_NOT_FOUND)
+    faqs_data = FAQsSerializer(faqs, many=True).data
+    return Response(faqs_data, status=status.HTTP_200_OK)
 
 @api_view(http_method_names=['GET'])
 def getAllReviews(request):
