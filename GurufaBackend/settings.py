@@ -13,7 +13,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 import dotenv
-import dj_database_url
+from google.oauth2 import service_account
 
 # Load environment variables from .env file
 dotenv.load_dotenv()
@@ -90,8 +90,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Railway
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     # Django Simple History
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
@@ -181,9 +179,30 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 """Image Field Setting"""
-MEDIA_URL = '/media/'
 
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')    
+
+"""GOOGLE CLOUD BUCKET"""
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+#         "OPTIONS": {
+#         },
+#     },
+#     "staticfiles": {
+#         "BACKEND" : "storages.backends.gcloud.GoogleCloudStorage",
+#         "OPTIONS":{},
+#     },
+# }
+
+# GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+#     "credentials/google_cloud.json"
+# )
+# GS_BUCKET_NAME=os.getenv('GS_BUCKET_NAME', None)
+# GS_PROJECT_ID=os.getenv('GS_PROJECT_ID', None)
+# GS_DEFAULT_ACL='publicRead'
+
 
 
 # Default primary key field type
@@ -266,4 +285,3 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 TWILIO_ACCOUNT_SID  = os.environ['TWILIO_ACCOUNT_SID']
 TWILIO_AUTH_TOKEN   = os.environ['TWILIO_AUTH_TOKEN']
 TWILIO_PHONE_NUMBER = os.environ['TWILIO_PHONE_NUMBER']
-
