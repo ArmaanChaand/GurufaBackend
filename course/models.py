@@ -86,7 +86,6 @@ class Course(models.Model):
 
         return total_participants
         
-    
     @property
     def starting_price(self):
         # Get all the plans linked with the course
@@ -133,9 +132,21 @@ class Course(models.Model):
 
     @property
     def min_duration(self):
+
         schedules = self.course_schedules.filter(is_active=True)
         min_duration = schedules.aggregate(min_duration=models.Min('duration'))['min_duration']
         return min_duration or 0
+
+    @property
+    def amount_per_session(self):
+        starting_price = self.starting_price
+        beginner_level = self.my_levels.filter(is_active=True, tier='TIER_1')
+        if beginner_level.exists():
+            increment = beginner_level.first().increment
+            decrement = beginner_level.first().decrement
+            num_classes = beginner_level.first().num_classes
+            amnt_per_ssn = (starting_price + increment - decrement)/num_classes
+            return amnt_per_ssn
 
     class Meta:
         verbose_name = 'Course'
@@ -172,6 +183,14 @@ class Levels(models.Model):
     is_active = models.BooleanField(default=True, null=False, blank=False)
     to_course   = models.ForeignKey(to=Course, on_delete=models.CASCADE, null=False, blank=False, related_name='my_levels')
     name        = models.CharField(_("Level Name"), max_length=100, null=False, blank=False)
+    TIER_CHOICES = (
+        ('TIER_1', 'TIER_1'),
+        ('TIER_2', 'TIER_2'),
+        ('TIER_3', 'TIER_3'),
+        ('TIER_4', 'TIER_4'),
+        ('TIER_5', 'TIER_5'),
+    )
+    tier        = models.CharField(_("Tier"), max_length=100, null=False, blank=False, choices=TIER_CHOICES, help_text=_("Required for the server. (Use 'TIER_1' for beginner, 'TIER_2' for intermediate and so on.)"))
     description = models.CharField(_("Level Description"), max_length=100, null=False, blank=False, default='Every Grandmaster Was A Novice.')
     increment   = models.DecimalField(verbose_name=_("Increase price by: "), decimal_places=2, max_digits=50,default=0, null=True, blank=True)
     decrement   = models.DecimalField(verbose_name=_("Decrease price by: "), decimal_places=2, max_digits=50, default=0, null=True, blank=True)

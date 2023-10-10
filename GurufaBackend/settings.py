@@ -32,7 +32,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'ovnx(kzvfkgl%&4m#hox9ln=+hiwusdfsdfwrt24f!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == '1'
 
-HOST= os.getenv('HOST', 'http://127.0.0.1:8000/')
+HOST= os.getenv('HOST', 'http://127.0.0.1:8000')
 
 ALLOWED_HOSTS = [
     'localhost', 

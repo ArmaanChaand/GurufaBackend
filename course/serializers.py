@@ -7,6 +7,7 @@ from guru.serializers import GuruSerializerForSchedule
 from home.models import Review
 from django.db import models
 from api.utils import get_image_with_host
+from api.serializers import ImageURLwithDomain
 
 class PlansSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +20,7 @@ class PlansSerializer(serializers.ModelSerializer):
         return data
 
 class CourseSerializerSmall(serializers.ModelSerializer):
+    course_icon = ImageURLwithDomain()
     class Meta:
         model = Course
         fields = ['id', 'name', 'course_icon', 'slug']
@@ -39,8 +41,10 @@ class LevelsSerializer(serializers.ModelSerializer):
         return data
 
 class CourseSerializer(serializers.ModelSerializer):
-    my_levels = LevelsSerializer(many=True, read_only=True)
-    my_plans = PlansSerializer(many=True, read_only=True)
+    my_levels     = LevelsSerializer(many=True, read_only=True)
+    my_plans      = PlansSerializer(many=True, read_only=True)
+    course_icon   = ImageURLwithDomain()
+    course_banner = ImageURLwithDomain()
 
     class Meta:
         model = Course
@@ -48,6 +52,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'id', 'name','slug','title','overview','course_icon', 'course_banner', 'course_banner_url',
             'review_count', 'average_rating', 'purchase_count','participants_count',
             'max_capacity', 'min_num_classes', 'min_frequency', 'min_duration', 'starting_price',
+            'amount_per_session',
             'my_plans', 'my_levels', 
         ]    
     

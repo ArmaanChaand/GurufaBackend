@@ -6,8 +6,10 @@ from .validators import password_validator
 from purchase.models import Purchase
 from course.models import Levels, Course   
 from api.utils import get_image_with_host
+from api.serializers import ImageURLwithDomain
 
 class userInfoSerializer(serializers.ModelSerializer):
+    picture = ImageURLwithDomain()
     class Meta: 
         model = User
         fields = [
@@ -47,6 +49,7 @@ class registerUserSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class CourseSerializerSmall(serializers.ModelSerializer):
+    course_icon = ImageURLwithDomain()
     class Meta:
         model = Course
         fields = ['id', 'name','course_icon', 'slug']
@@ -90,6 +93,7 @@ class KidsPurchaseSerializer(serializers.ModelSerializer):
 
 class kidInfoSerializer(serializers.ModelSerializer):
     my_purchases = KidsPurchaseSerializer(many=True, read_only=True)
+    kid_profile  = ImageURLwithDomain()
     class Meta: 
         model = Kid
         fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases', 'kid_gender', 'demo_courses']

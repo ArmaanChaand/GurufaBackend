@@ -133,7 +133,7 @@ class Kid(models.Model):
     kid_last_name     = models.CharField(_("Last name"), max_length=50, blank=False, null=False)
     kid_age           = models.PositiveIntegerField(_("Kid's Age (In Years)"), default=5, validators=[validate_kids_age])
     is_active         = models.BooleanField(default=True, null=False, blank=False)
-    demo_courses      = models.ManyToManyField(to=Course, related_name='kids_taken_demo', verbose_name="Demo Course Purchased", null=True, blank=True)
+    demo_courses      = models.ManyToManyField(to=Course, related_name='kids_taken_demo', verbose_name="Demo Course Purchased", blank=True)
 
     history           = HistoricalRecords()
 
