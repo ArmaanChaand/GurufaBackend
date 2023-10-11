@@ -2,20 +2,32 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .models import Course, Plans, Levels, Schedule
-from .serializers import CourseSerializer, LevelsSerializer, PlansSerializer, ScheduleSerializer
-from datetime import date, datetime, timedelta
+from .serializers import CourseSerializer, CourseSerializerSmall, ScheduleSerializer
+from datetime import datetime
 from django.db.models import Min
 
 
 @api_view(http_method_names=['GET'])
 def getAllCourses(request):    
     courses = Course.objects.filter(is_active=True)
-    course_serializer = CourseSerializer(courses, many=True)
+    course_serializer = CourseSerializerSmall(courses, many=True)
 
     data = {            
         'courses': course_serializer.data
     }
     return Response(data)               
+
+@api_view(http_method_names=['GET'])
+def getCourseData(request, course_slug):    
+    courses = Course.objects.filter(is_active=True, slug=course_slug)
+    if courses.exists():
+        course_serializer = CourseSerializer(courses.first(), many=False)
+        return Response(course_serializer.data, status=status.HTTP_200_OK)               
+    else:
+        return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)               
+
+
+
 
 # @api_view(['GET'])
 # def getAllSchedules(request, course_id):

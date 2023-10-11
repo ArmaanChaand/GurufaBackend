@@ -23,7 +23,7 @@ class CourseSerializerSmall(serializers.ModelSerializer):
     course_icon = ImageURLwithDomain()
     class Meta:
         model = Course
-        fields = ['id', 'name', 'course_icon', 'slug']
+        fields = ['id', 'name', 'course_icon', 'slug', 'amount_per_session']
         
 
 class LevelsSerializer(serializers.ModelSerializer):
