@@ -5,7 +5,7 @@ from .models import Course, Plans, Levels, Schedule
 from .serializers import CourseSerializer, CourseSerializerSmall, ScheduleSerializer
 from datetime import datetime
 from django.db.models import Min
-
+from guru.serializers import GuruSerializerForSchedule
 
 @api_view(http_method_names=['GET'])
 def getAllCourses(request):    
@@ -65,3 +65,19 @@ def getAllSchedules(request, course_level_id):
         return Response(serializer.data)
     except (Course.DoesNotExist, Plans.DoesNotExist):
         return Response({'error': 'Course or Plan not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def getTheScheduleGuru(request, course_level_id):
+    try:
+        
+        course_level = Levels.objects.get(id=course_level_id)
+        plan = Plans.objects.get(slug=request.GET.get('plan_slug'))
+        
+        # Filter schedules with a start date in the future
+        schedule_guru = Schedule.objects.filter(to_course_level=course_level, plan=plan, is_active=True)[0].guru
+        
+        serializer = GuruSerializerForSchedule(schedule_guru, many=False)
+        
+        return Response(serializer.data)
+    except (Course.DoesNotExist, Plans.DoesNotExist):
+        return Response({'error': 'Guru not found.'}, status=status.HTTP_404_NOT_FOUND)

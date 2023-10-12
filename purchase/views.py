@@ -218,7 +218,7 @@ def getOrderCashfree(request):
     cf_order_id = request.data.get('cf_order_id')
 
     try:
-        purchase = Purchase.objects.get(booking_id=cf_order_id, user=request.user,  payment_platform='Cashfree')
+        purchase = Purchase.objects.get(booking_id=cf_order_id, user=request.user,  payment_platform='Cashfree', is_active=True)
         url = f"{settings.CASHFREE_ENDPOINT}/orders/{cf_order_id}/payments"
         headers = {
             "accept": "application/json",
@@ -227,6 +227,7 @@ def getOrderCashfree(request):
             "x-api-version": "2023-08-01",
         }
         response = requests.get(url=url, headers=headers)
+        print(response)
         res_data = json.loads(response.text)[0]
         if(res_data['payment_status'] == "SUCCESS"):
             purchase.payment_status = 'PAID'

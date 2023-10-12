@@ -23,10 +23,10 @@ class CourseSerializerSmall(serializers.ModelSerializer):
     course_icon = ImageURLwithDomain()
     class Meta:
         model = Course
-        fields = ['id', 'name', 'course_icon', 'slug', 'amount_per_session']
+        fields = ['id', 'name', 'course_icon', 'overview', 'slug', 'amount_per_session']
         
 
-class LevelsSerializer(serializers.ModelSerializer):
+class LevelsSerializer(serializers.ModelSerializer):    
     to_course = CourseSerializerSmall(many=False, read_only=True)
     class Meta:
         model = Levels
@@ -70,7 +70,6 @@ class SessionSerializer(serializers.ModelSerializer):
     
     
 class ScheduleSerializer(serializers.ModelSerializer):
-    guru = GuruSerializerForSchedule(many=False, read_only=True)
     timings_by_day = serializers.SerializerMethodField()
 
     class Meta:
