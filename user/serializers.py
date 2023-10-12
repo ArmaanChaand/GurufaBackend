@@ -97,6 +97,11 @@ class kidInfoSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Kid
         fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'my_purchases', 'kid_gender', 'demo_courses']
+
+class kidMutateSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Kid
+        fields = ['id', 'kid_profile','kid_first_name','kid_last_name', 'kid_age', 'kid_gender']
     
     def validate_kid_profile(self, value):
         if value and value.size > 2 * 1024 * 1024:  
