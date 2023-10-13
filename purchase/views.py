@@ -12,7 +12,8 @@ from .models import Purchase, PurchaseSession
 from .serializers import PurchaseSerializer, PurchaseSessionSerializer
 from course.models import Levels, Plans, Schedule, Course
 from course.serializers import PlansSerializer
-from user.models import User, Kid   
+from user.models import User, Kid 
+from .emails import sendBookingConfirmationMail
 # Create your views here.
 
 @api_view(http_method_names=['POST'])
@@ -65,6 +66,9 @@ def CreatePurchase(request):
     purchase.kids_selected.set(kids_selected)
     purchase.purchase_session = purchase_session
 
+    if schedule.seats_left <= 0 or schedule.seats_left < purchase.kids_selected.count():
+        return Response({"error": "zero_slots"}, status=status.HTTP_400_BAD_REQUEST)
+
     """DEMO PLAN SELECTED"""
     if purchase_price == 0 or purchase_price < 1:
         purchase.payment_status = 'PAID'
@@ -79,7 +83,18 @@ def CreatePurchase(request):
             for kid in kids_selected:
                 kid.demo_courses.add(course_level.to_course)
         purchase.save()
-
+        try:
+            sendBookingConfirmationMail(
+                user_email=user.email,
+                user_first_name=user.first_name,
+                course_name=course_level.to_course.name,
+                level_name=course_level.name,
+                booking_id=purchase.booking_id
+            )
+            print("DEMO")
+        except Exception as e:
+            # print(e)
+            pass
         data = {}
         data['method'] = 'Free Purchase'
         data['purchase_data'] = PurchaseSerializer(purchase).data
@@ -152,7 +167,7 @@ def CreatePurchase(request):
                 }
             return Response(response_data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            print(e)
+            print("CASHFREE", e)
             return Response({'error': 'Some error ocurred.'}, status=status.HTTP_400_BAD_REQUEST)
         
 
@@ -227,7 +242,6 @@ def getOrderCashfree(request):
             "x-api-version": "2023-08-01",
         }
         response = requests.get(url=url, headers=headers)
-        print(response)
         res_data = json.loads(response.text)[0]
         if(res_data['payment_status'] == "SUCCESS"):
             purchase.payment_status = 'PAID'
@@ -240,7 +254,20 @@ def getOrderCashfree(request):
                 purchase.purchase_session.save()
             except Exception as e:
                 pass
+
             purchase.save()
+            try:
+                sendBookingConfirmationMail(
+                    user_email= purchase.user.email,
+                    user_first_name= purchase.user.first_name,
+                    course_name= purchase.course_level.to_course.name,
+                    level_name=purchase.course_level.name,
+                    booking_id=purchase.booking_id
+                )
+                print("CASHFREE")
+            except Exception as e:
+                # print(e)
+                pass
             response_data = {
                 'payment_status': "SUCCESS",
                 'purchase_data': PurchaseSerializer(purchase).data,
@@ -263,8 +290,6 @@ def getOrderCashfree(request):
                 
             }
             return Response(response_data, status=status.HTTP_200_OK)
-
-
     except Purchase.DoesNotExist:
         return Response({'error': 'Purchase Does Not Exists'}, status=status.HTTP_400_BAD_REQUEST)
 

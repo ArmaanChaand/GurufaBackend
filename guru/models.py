@@ -9,11 +9,11 @@ from simple_history.models import HistoricalRecords
 # Create your models here.
 
 class Guru(models.Model):
-    is_active        = models.BooleanField(default=True, null=False, blank=False)
-    user_id          = models.OneToOneField(User, null=False, blank=False, on_delete=models.CASCADE)
-    guru_description = models.TextField(null=True, blank=True)
-    experience       = models.FloatField(_("Years Of Experience"), null=False, blank=False, default=0)
-
+    is_active         = models.BooleanField(default=True, null=False, blank=False)
+    user_id           = models.OneToOneField(User, null=False, blank=False, on_delete=models.CASCADE)
+    guru_description  = models.TextField(null=True, blank=True, help_text=_("Insert '|' between sentences to create distinct bullet points."))
+    experience        = models.FloatField(_("Years Of Experience"), null=False, blank=False, default=0)
+    students_mentored = models.IntegerField(_("Students mentored"), null=True, blank=True, default=0)
     history     = HistoricalRecords()
 
     class Meta:

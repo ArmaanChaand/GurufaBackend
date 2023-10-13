@@ -18,6 +18,7 @@ from .serializers import userInfoSerializer
 import random
 from twilio.rest import Client
 from .validators import password_validator
+import requests
 
 def sendHtmlEmail(subject,  recipient_list, email_template_name, email_template_context):
     html_message = render_to_string(email_template_name, email_template_context)
@@ -62,6 +63,33 @@ def verify_email(request, uidb64, token):
 
 
 
+"""MSG_91"""
+# def sendOtpSMS(user_phone_number, otp): #MSG91
+#     user_phone_number='+918210485920' # Remove this line in production
+
+#     url = "https://control.msg91.com/api/v5/flow/"
+#     msg91_authkey = settings.MSG91_AUTHKEY
+#     template_id = settings.MSG91_TEMPLATE_ID
+
+#     payload = {
+#         "template_id": template_id,
+#         "short_url": "1", #1 (On) or 0 (Off)
+#         "recipients": [
+#             {
+#                 "mobiles": user_phone_number, #"919XXXXXXXXX"
+#                 "OTP": otp,
+#             }
+#         ]
+#     }
+#     headers = {
+#         "accept": "application/json",
+#         "content-type": "application/json",
+#         "authkey": msg91_authkey
+#     }
+
+#     response = requests.post(url, json=payload, headers=headers)
+
+#     print(response.text)
 
 def sendOtpSMS(user_phone_number, otp):
     user_phone_number='+918210485920' # Remove this line in production

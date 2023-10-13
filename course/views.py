@@ -57,7 +57,7 @@ def getAllSchedules(request, course_level_id):
             earliest_date = timings.aggregate(earliest_date=Min('date'))['earliest_date']
             earliest_timing = timings.filter(date=earliest_date)[0]
             schedule_time = datetime.combine(earliest_timing.date, earliest_timing.start_time)
-            if(schedule_time > now):
+            if(schedule_time > now and schedule.seats_left > 0):
                 schedules.append(schedule)
         
         serializer = ScheduleSerializer(schedules, many=True)
