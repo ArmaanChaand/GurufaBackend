@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .models import FAQs, Review
-from .serializers import FAQsSerializer,ReviewSerializer
+from .models import FAQs, Review, CustomerOperations
+from .serializers import FAQsSerializer,ReviewSerializer, CustomerOperationsSerializer
 from datetime import datetime
 from course.models import Course
+from user.verifyViews import sendHtmlEmail
+from django.conf import settings
 # Create your views here.
 
 @api_view(http_method_names=['GET'])
@@ -80,3 +82,33 @@ def createReview(request):
         new_review.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def getAllCustomerOperations(request):
+    try:
+        customer_operations = CustomerOperations.objects.filter(is_active=True)
+        customer_operations_serializer = CustomerOperationsSerializer(customer_operations, many=True)
+        return Response(customer_operations_serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": "Some error ocurred!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def newCustomerOperations(request):
+    customer_operations_serializer = CustomerOperationsSerializer(data=request.data)
+    if customer_operations_serializer.is_valid():
+        customer_operations = customer_operations_serializer.save()
+        email_template_context = {
+            'email': customer_operations.email,
+            'phone': customer_operations.phone,
+            'message': customer_operations.message,
+        }
+        sendHtmlEmail(
+            subject="GURUFA: New Customer Operation.",
+            recipient_list=[settings.GURUFA_CONTACT_EMAIL],
+            email_template_name='customer_operation_alert.html',    
+            email_template_context=email_template_context
+            )
+        return Response(customer_operations_serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(customer_operations_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

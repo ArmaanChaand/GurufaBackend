@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import FAQs, Review
+from .models import FAQs, Review, CustomerOperations
 from user.serializers import userInfoSerializer
 
 class FAQsSerializer(serializers.ModelSerializer):
@@ -15,4 +15,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+class CustomerOperationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerOperations
+        fields = ['email', 'phone', 'message']
     

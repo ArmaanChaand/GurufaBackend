@@ -289,3 +289,6 @@ TWILIO_PHONE_NUMBER = os.environ['TWILIO_PHONE_NUMBER']
 """MSG91"""
 MSG91_AUTHKEY = os.getenv('MSG91_AUTHKEY', "None")
 MSG91_TEMPLATE_ID = os.getenv('MSG91_TEMPLATE_ID', "None")
+
+"""GURUFA INFOS"""
+GURUFA_CONTACT_EMAIL = os.getenv('GURUFA_CONTACT_EMAIL', "contact@gurufa.com")

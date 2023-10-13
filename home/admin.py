@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import FAQs, Review
+from .models import FAQs, Review, CustomerOperations
 # Register your models here.
 
 class FAQModelAdmin(admin.ModelAdmin):
@@ -26,4 +26,16 @@ class ReviewModelAdmin(admin.ModelAdmin):
         ('Activity Status', {'fields': ['is_active']}),
     ]
 
+
 admin.site.register(Review, ReviewModelAdmin)
+
+class CustomerOperationsModelAdmin(admin.ModelAdmin):
+    list_display = ['email', 'phone']  # Specify the fields to display in the list view
+
+    fieldsets = [
+        ('Contact', {'fields': ['email', 'phone']}),
+        ('Message', {'fields': ['message']}),
+
+    ]
+
+admin.site.register(CustomerOperations, CustomerOperationsModelAdmin)

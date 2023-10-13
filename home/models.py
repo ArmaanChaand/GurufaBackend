@@ -4,6 +4,7 @@ from django.core.exceptions import  ValidationError
 from course.models import Course
 from user.models import User
 from simple_history.models import HistoricalRecords
+from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 class FAQs(models.Model):
     FAQ_FOR_CHOICES = (
@@ -85,6 +86,18 @@ class Review(models.Model):
 
     def __str__(self) -> str:
         return f"{self.content[:30]}...]"
+
+class CustomerOperations(models.Model):
+    email      = models.EmailField(null=False, blank=False)
+    phone      = PhoneNumberField(null=False, blank=False)
+    message    = models.TextField(null=False, blank=False)
+    created_at = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    is_active  = models.BooleanField(null=True, blank=True, default=True)
+
+
+    class Meta:
+        verbose_name = 'Customer Operation'
+        verbose_name_plural = 'Customer Operations' 
 
 
     
