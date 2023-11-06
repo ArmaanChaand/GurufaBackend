@@ -286,6 +286,8 @@ def getOrderCashfree(request):
                     'payment_id': res_data['cf_payment_id'],
                     'order_id': purchase.booking_id,
                     'error_description': res_data['error_details']['error_description'],
+                    'purchase_session_identifier': purchase.purchase_session.identifier,
+                    'purchase_session_course': purchase.purchase_session.course_selected.slug,
                 }
                 
             }
